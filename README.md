@@ -29,11 +29,10 @@ Here are the Automated Testing Scripts...
 
 # Expected Output
 
-
 Test OK
 
 ```text
-Script started on Tue Jun 18 13:20:21 2024
+Script started on Tue Jun 18 13:36:36 2024
 Command: /Users/luppy/sg2000/autotest-nuttx-sg2000/scripts/test.sh
 + '[' '' == '' ']'
 ++ date +%Y-%m-%d
@@ -70,9 +69,9 @@ NuttX Source: https://github.com/apache/nuttx/tree/28ae3b38499c6c7bac0d432658da2
 NuttX Apps: https://github.com/apache/nuttx-apps/tree/00f98947786892eaabf60b2e61fad553aee1c36c
 ----- Copy NuttX Image to TFTP Server
 + scp /tmp/Image tftpserver:/tftpboot/Image-sg2000
-Image                                                               0%    0     0.0KB/s   --:-- ETAImage                                                             100%   15MB  46.1MB/s   00:00    
+Image                                                               0%    0     0.0KB/s   --:-- ETAImage                                                             100%   15MB  36.7MB/s   00:00    
 + ssh tftpserver ls -l /tftpboot/Image-sg2000
--rw-r--r-- 1 pi pi 15687256 Jun 18 06:20 /tftpboot/Image-sg2000
+-rw-r--r-- 1 pi pi 15687256 Jun 18 06:36 /tftpboot/Image-sg2000
 + set +x
 Power on the SBC. Press Enter...
 
@@ -167,18 +166,18 @@ In:    serial
 Out:   serial
 Err:   serial
 Net:   
-Warning: ethernet@4070000 (eth0) using random MAC address - 5a:2a:b4:9f:54:6b
+Warning: ethernet@4070000 (eth0) using random MAC address - 1e:4f:c4:b1:d4:70
 eth0: ethernet@4070000
 Hit any key to stop autoboot:  1  0 
-ethernet@4070000 Waiting for PHY auto negotiation to complete... done
+ethernet@4070000 Waiting for PHY auto negotiation to complete.. done
 Speed: 100, full duplex
 BOOTP broadcast 1
 BOOTP broadcast 2
 *** Unhandled DHCP Option in OFFER/ACK: 43
 *** Unhandled DHCP Option in OFFER/ACK: 43
-DHCP client bound to address 192.168.31.125 (358 ms)
+DHCP client bound to address 192.168.31.41 (547 ms)
 Using ethernet@4070000 device
-TFTP from server 192.168.31.10; our IP address is 192.168.31.125
+TFTP from server 192.168.31.10; our IP address is 192.168.31.41
 Filename 'Image-sg2000'.
 Load address: 0x80200000
 Loading: *#################################################################
@@ -203,7 +202,7 @@ done
 Bytes transferred = 15687256 (ef5e58 hex)
 Speed: 100, full duplex
 Using ethernet@4070000 device
-TFTP from server 192.168.31.10; our IP address is 192.168.31.125
+TFTP from server 192.168.31.10; our IP address is 192.168.31.41
 Filename 'jh7110-star64-pine64.dtb'.
 Load address: 0x81200000
 Loading: *####
@@ -218,15 +217,15 @@ Starting kernel ...
 
 ABC
 NuttShell (NSH) NuttX-12.5.1
-nsh> [Kuname -a
+nsh> uname -a
 NuttX 12.5.1 28ae3b3849 Jun 18 2024 03:15:56 risc-v milkv_duos
-nsh> [Kfree
+nsh> free
                  total       used       free    maxused    maxfree  nused  nfree
       Kmem:    2061304      11576    2049728      38160    2042848     33      5
       Page:   20971520     647168   20324352   20324352
-nsh> [Khello
+nsh> hello
 Hello, World!!
-nsh> [Kgetprime
+nsh> getprime
 Set thread priority to 10
 Set thread policy to SCHED_RR
 Start thread #0
@@ -234,17 +233,17 @@ thread #0 started, looking for primes < 10000, doing 10 run(s)
 thread #0 finished, found 1230 primes, last one was 9973
 Done
 getprime took 18491 msec
-nsh> [Khello
+nsh> hello
 Hello, World!!
-nsh> [Kgetprime
+nsh> getprime
 Set thread priority to 10
 Set thread policy to SCHED_RR
 Start thread #0
 thread #0 started, looking for primes < 10000, doing 10 run(s)
 thread #0 finished, found 1230 primes, last one was 9973
 Done
-getprime took 18489 msec
-nsh> [Kostest
+getprime took 18490 msec
+nsh> ostest
 stdio_test: write fd=1
 stdio_test: Standard I/O Check: printf
 stdio_test: write fd=2
@@ -537,8 +536,8 @@ user_main: timed semaphore test
 semtimed_test: Initializing semaphore to 0
 semtimed_test: Waiting for two second timeout
 semtimed_test: PASS: first test returned timeout
-BEFORE: (63 sec, 904000000 nsec)
-AFTER:  (65 sec, 905000000 nsec)
+BEFORE: (63 sec, 906000000 nsec)
+AFTER:  (65 sec, 907000000 nsec)
 semtimed_test: Starting poster thread
 semtimed_test: Set thread 1 priority to 191
 semtimed_test: Starting poster thread 3
@@ -547,8 +546,8 @@ semtimed_test: Waiting for two second timeout
 poster_func: Waiting for 1 second
 poster_func: Posting
 semtimed_test: PASS: sem_timedwait succeeded
-BEFORE: (65 sec, 934000000 nsec)
-AFTER:  (66 sec, 940000000 nsec)
+BEFORE: (65 sec, 936000000 nsec)
+AFTER:  (66 sec, 942000000 nsec)
 
 End of test memory usage:
 VARIABLE  BEFORE   AFTER
@@ -888,19 +887,19 @@ user_main: barrier test
 barrier_test: Initializing barrier
 barrier_test: Thread 0 created
 barrier_test: Thread 1 created
-barrier_test: Thread 2 created
-barrier_test: Thread 3 created
-barrier_test: Thread 4 created
-barrier_test: Thread 5 created
-barrier_test: Thread 6 created
-barrier_test: Thread 7 created
 barrier_func: Thread 0 started
 barrier_func: Thread 1 started
+barrier_test: Thread 2 created
 barrier_func: Thread 2 started
+barrier_test: Thread 3 created
 barrier_func: Thread 3 started
+barrier_test: Thread 4 created
 barrier_func: Thread 4 started
+barrier_test: Thread 5 created
 barrier_func: Thread 5 started
+barrier_test: Thread 6 created
 barrier_func: Thread 6 started
+barrier_test: Thread 7 created
 barrier_func: Thread 7 started
 barrier_func: Thread 0 calling pthread_barrier_wait()
 barrier_func: Thread 1 calling pthread_barrier_wait()
@@ -986,5 +985,5 @@ ostest_main: Exiting with status 0
 Script done, output file is /tmp/test.log
 
 Command exit status: 0
-Script done on Tue Jun 18 13:23:33 2024
+Script done on Tue Jun 18 13:39:42 2024
 ```
