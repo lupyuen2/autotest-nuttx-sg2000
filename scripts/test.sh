@@ -4,6 +4,10 @@
 set -e  ##  Exit when any command fails
 set -x  ##  Echo commands
 
+## Get the Home Assistant Token, copied from http://localhost:8123/profile/security
+## token=xxxx
+. $HOME/home-assistant-token.sh
+
 ##  Default Build Prefix is "nuttx-sg2000"
 if [ "$BUILD_PREFIX" == '' ]; then
     export BUILD_PREFIX=nuttx-sg2000
@@ -51,8 +55,32 @@ set +x  ##  Disable echo
 echo Power off the SBC, press Enter, then power on...
 read
 
+# echo "----- Power Off the SBC"
+# curl \
+#     -X POST \
+#     -H "Authorization: Bearer $token" \
+#     -H "Content-Type: application/json" \
+#     -d '{"entity_id": "automation.sg2000_power_off"}' \
+#     http://localhost:8123/api/services/automation/trigger
+
+# echo "----- Power On the SBC"
+# curl \
+#     -X POST \
+#     -H "Authorization: Bearer $token" \
+#     -H "Content-Type: application/json" \
+#     -d '{"entity_id": "automation.sg2000_power_on"}' \
+#     http://localhost:8123/api/services/automation/trigger
+
 ##  Run the Automated Test
 script /tmp/test.log $SCRIPT_DIR/nuttx.exp
+
+# echo "----- Power Off the SBC"
+# curl \
+#     -X POST \
+#     -H "Authorization: Bearer $token" \
+#     -H "Content-Type: application/json" \
+#     -d '{"entity_id": "automation.sg2000_power_off"}' \
+#     http://localhost:8123/api/services/automation/trigger
 
 ##  Check whether BL602 has crashed
 # set +e  ##  Don't exit when any command fails
