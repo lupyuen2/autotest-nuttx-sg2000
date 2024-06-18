@@ -4,6 +4,11 @@
 set -e  ##  Exit when any command fails
 set -x  ##  Echo commands
 
+##  Default Build Prefix is "nuttx-sg2000"
+if [ "$BUILD_PREFIX" == '' ]; then
+    export BUILD_PREFIX=nuttx-sg2000
+fi
+
 ##  Default Build Date is today (YYYY-MM-DD)
 if [ "$BUILD_DATE" == '' ]; then
     export BUILD_DATE=$(date +'%Y-%m-%d')
@@ -17,7 +22,7 @@ fi
 set +x  ##  Disable echo
 echo "----- Download the latest NuttX build for $BUILD_DATE"
 set -x  ##  Enable echo
-wget -q https://github.com/lupyuen/nuttx-sg2000/releases/download/nuttx-sg2000-$BUILD_DATE/nuttx.zip -O /tmp/nuttx.zip
+wget -q https://github.com/lupyuen/nuttx-sg2000/releases/download/$BUILD_PREFIX-$BUILD_DATE/nuttx.zip -O /tmp/nuttx.zip
 pushd /tmp
 unzip -o nuttx.zip
 popd
@@ -33,7 +38,7 @@ if [ -f /tmp/nuttx.hash ]; then
 fi
 
 ##  Write the Release Tag for populating the Release Log later
-echo "nuttx-sg2000-$BUILD_DATE" >/tmp/release.tag
+echo "$BUILD_PREFIX-$BUILD_DATE" >/tmp/release.tag
 
 ## Copy NuttX Image to TFTP Server
 echo "----- Copy NuttX Image to TFTP Server"

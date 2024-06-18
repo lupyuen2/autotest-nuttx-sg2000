@@ -23,9 +23,10 @@ scripts/upload.sh
 
 Here are the Automated Testing Scripts...
 
-- [test.sh](scripts/test.sh)
-- [upload.sh](scripts/upload.sh)
-- [nuttx.exp](scripts/nuttx.exp)
+- Automated Task: [task.sh](scripts/task.sh)
+- Test NuttX on SBC: [test.sh](scripts/test.sh)
+- Upload Test Log: [upload.sh](scripts/upload.sh)
+- Expect Script: [nuttx.exp](scripts/nuttx.exp)
 
 # Expected Output
 
