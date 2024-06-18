@@ -36,8 +36,11 @@ fi
 echo "nuttx-sg2000-$BUILD_DATE" >/tmp/release.tag
 
 ## Copy NuttX Image to TFTP Server
+echo "----- Copy NuttX Image to TFTP Server"
+set -x  ##  Enable echo
 scp /tmp/Image tftpserver:/tftpboot/Image-sg2000
 ssh tftpserver ls -l /tftpboot/Image-sg2000
+set +x  ##  Disable echo
 
 ## TODO: Reboot the SBC with a Smart Power Plug
 echo Power on the SBC. Press Enter...
