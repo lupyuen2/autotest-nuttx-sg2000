@@ -19,7 +19,7 @@ script /tmp/release.log scripts/test.sh
 scripts/upload.sh
 ```
 
-Release Notes will appear like this: [nuttx-sg2000-2024-06-18](https://github.com/lupyuen/nuttx-sg2000/releases/tag/nuttx-sg2000-2024-06-18)
+[(See the Automated Test Logs)](https://github.com/lupyuen/nuttx-sg2000/releases)
 
 Here are the Automated Testing Scripts...
 
