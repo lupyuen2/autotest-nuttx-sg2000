@@ -1,1651 +1,983 @@
-# Flash and Test BL602 Remotely via a Linux Single-Board Computer
+# Automated Testing of Apache NuttX RTOS on Sophgo SG2000 / Milk-V Duo S
 
-Read the articles...
+We are now running Daily Automated Testing of [Apache NuttX RTOS](https://github.com/lupyuen/nuttx-sg2000) on a Real Milk-V Duo S SBC (Sophgo SG2000 SoC)...
 
--   ["Auto Flash and Test NuttX on RISC-V BL602"](https://lupyuen.github.io/articles/auto)
+1.  Download the [Automated Daily Build](https://github.com/lupyuen/nuttx-sg2000#nuttx-automated-daily-build-for-sg2000) to TFTP Server
+1.  TODO: Power on our SBC with an [IKEA Smart Power Plug via Home Assistant](https://lupyuen.github.io/articles/tftp#whats-next)
+1.  Our SBC boots the Daily Build over TFTP
+1.  Capture the Automated Testing Log and write to the Release Notes
 
--   ["(Mostly) Automated Testing of Apache NuttX RTOS on PineDio Stack BL604 RISC-V Board"](https://lupyuen.github.io/articles/auto2)
-
-Watch the demos on YouTube...
-
--   ["Auto Flash and Test on PineDio Stack BL604"](https://youtu.be/JX7rWqWTOW4)
-
--   ["Auto Flash and Test on PineCone BL602"](https://youtu.be/JtnOyl5cYjo)
-
-This script runs on a Linux Single-Board Computer (SBC) to automagically Flash and Test BL602, with the Latest Daily Build of Apache NuttX OS.
-
-The script sends the "`lorawan_test`" command to BL602 after booting, to test the LoRaWAN Stack.
-
-If BL602 crashes, the script runs a Crash Analysis to show the RISC-V Disassembly of the addresses in the Stack Trace.
-
-The scripts are here...
-
--   [scripts/test.sh](scripts/test.sh): Auto Flash and Test PineCone BL602
-
--   [scripts/pinedio.sh](scripts/pinedio.sh): Auto Flash and Test PineDio Stack BL604
-
--   [scripts/pinedio2.sh](scripts/pinedio2.sh): Called by pinedio.sh
-
--   [scripts/upload.sh](scripts/upload.sh): Upload Test Log to GitHub Release Notes
-
-NuttX Builds are done by GitHub Actions...
-
--  [Daily Upstream Build](https://github.com/lupyuen/incubator-nuttx/blob/master/.github/workflows/bl602.yml) (Without the LoRaWAN Stack)
-
--  [Release Build](https://github.com/lupyuen/incubator-nuttx/blob/master/.github/workflows/bl602-commit.yml) (Includes the LoRaWAN Stack)
-
--  [Downstream Build](https://github.com/lupyuen/incubator-nuttx/blob/master/.github/workflows/bl602-downstream.yml) (Merges the LoRaWAN Stack with upstream updates)
-
--  [PineDio Stack BL604 Build](https://github.com/lupyuen/incubator-nuttx/blob/pinedio/.github/workflows/pinedio.yml) (Includes the LoRaWAN Stack, ST7789 Display Driver, Touch Panel Driver, LVGL Test App)
-
-Why are we doing this?
-
--   Might be useful for __Release Testing__ of NuttX (and other operating systems) on real hardware
-
--   By auto-testing the __LoRaWAN Stack__ on NuttX, we can be sure that GPIO Input / Output / Interrupts, SPI, ADC, Timers, Message Queues, PThreads, Strong Random Number Generator and Internal Temperature Sensor are all working OK with the latest Daily Build of NuttX
-
--   I write articles about NuttX OS. I need to pick the __Latest Stable Build__ of NuttX for testing the NuttX code in my articles. [(Like these)](https://lupyuen.github.io/articles/book#nuttx-on-bl602)
-
-# Run The Script
-
-Watch the demo on YouTube...
-
--   ["Auto Flash and Test on PineCone BL602"](https://youtu.be/JtnOyl5cYjo)
-
-Connect SBC to BL602 and SX1262 like so...
-
-| SBC     | BL602    | SX1262 | Function
-| --------|----------|--------|----------
-| GPIO 2  | GPIO 8   |        | Flashing Mode
-| GPIO 3  | RST      | RESET  | Reset
-| GND     | GND      |        | Ground
-| USB     | USB      |        | USB UART
-
-For auto-testing LoRaWAN, also connect BL602 to SX1262 as described below...
-
-- ["Connect SX1262"](https://lupyuen.github.io/articles/spi2#connect-sx1262)
-
-To run the flash and test script for the __Daily Upstream Build__ (without LoRaWAN)...
+Like this...
 
 ```bash
-##  Allow the user to access the GPIO and UART ports
-sudo usermod -a -G gpio    $USER
-sudo usermod -a -G dialout $USER
+## Run the Daily Automated Testing
+script /tmp/release.log scripts/test.sh
 
-##  Logout and login to refresh the permissions
-logout
-
-##  TODO: Install rustup, select default option.
-##  See https://rustup.rs
-
-##  Install blflash for flashing PineDio Stack
-##  https://github.com/spacemeowx2/blflash
-cargo install blflash
-
-##  Download the flash and test script
-git clone --recursive https://github.com/lupyuen/remote-bl602/
-
-##  Always sync the clock before running the script
-sudo apt install ntpdate
-sudo ntpdate -u time.nist.gov
-date
-
-##  Run the script for Auto Flash and Test.
-##  Capture the Test Log in /tmp/release.log
-script -c remote-bl602/scripts/test.sh /tmp/release.log
-
-##  TODO: Install the GitHub CLI for uploading Release Notes: https://cli.github.com
-##  Log in a GitHub Token that has "repo" and "read:org" permissions
-
-##  Optional: Upload the Test Log to the GitHub Release Notes
-remote-bl602/scripts/upload.sh
+## Upload the Test Log to GitHub Release Notes
+scripts/upload.sh
 ```
 
-(See the output log below)
+Release Notes will appear like this: [nuttx-sg2000-2024-06-18](https://github.com/lupyuen/nuttx-sg2000/releases/tag/nuttx-sg2000-2024-06-18)
 
-To run the flash and test script for the __Release Build__ (includes LoRaWAN)...
+Here are the Automated Testing Scripts...
 
-```bash
-##  Tell the script to download the Release Build (instead of the Upstream Build)
-export BUILD_PREFIX=release
+- [test.sh](scripts/test.sh)
+- [upload.sh](scripts/upload.sh)
+- [nuttx.exp](scripts/nuttx.exp)
 
-##  Auto flash and test BL602
-remote-bl602/scripts/test.sh
-```
+# Expected Output
 
-(See the output log below)
-
-To select the __Downstream Build__ by __Build Date__...
-
-```bash
-##  Tell the script to download the Downstream Build for 2022-05-04
-export BUILD_PREFIX=downstream
-export BUILD_DATE=2022-05-04
-
-##  Run the script for Auto Flash and Test.
-##  Capture the Test Log in /tmp/release.log
-script -c remote-bl602/scripts/test.sh /tmp/release.log
-```
-
-For __PineDio Stack BL604__...
-
-```bash
-##  Run the script for Auto Flash and Test for PineDio Stack BL604.
-##  Capture the Test Log in /tmp/release.log
-script -c remote-bl602/scripts/pinedio.sh /tmp/release.log
-```
-
-[(See the Test Log)](https://github.com/lupyuen/incubator-nuttx/releases/tag/pinedio-2022-05-10)
-
-We may also __flash and test BL602 remotely__ over SSH...
-
-```bash
-ssh my-sbc remote-bl602/scripts/test.sh
-```
-
-# PineDio Stack BL604
-
-Watch the demo on YouTube...
-
--   ["Auto Flash and Test on PineDio Stack BL604"](https://youtu.be/JX7rWqWTOW4)
-
-We connect PineDio Stack BL604 to the SBC for Auto Flash and Test like so...
-
-| SBC     | BL604    | Function
-| --------|----------|----------
-| GPIO 5  | GPIO 8 _(GPIO Port)_  | Flashing Mode
-| GPIO 6  | RST _(JTAG Port)_     | Reset
-| GND     | GND _(JTAG Port)_     | Ground
-| USB     | USB Port              | USB UART
-
-__GPIO 8 Jumper must be set to Low (Non-Flashing Mode)!__
-
-(Or the LoRaWAN Test App will fail because the timers will get triggered too quickly)
-
-# Test PineDio Stack BL604
-
-We auto flash and test PineDio Stack BL604 in two scripts.
-
-The first script auto-flashes the PineDio Stack Firmware [(auto-built by GitHub Actions)](https://github.com/lupyuen/incubator-nuttx/blob/pinedio/.github/workflows/pinedio.yml) and runs the [LoRaWAN Test App](https://github.com/lupyuen/lorawan_test)...
-
--   [scripts/pinedio.sh](scripts/pinedio.sh)
-
-The [LoRaWAN Test App](https://github.com/lupyuen/lorawan_test) connects to a LoRaWAN Gateway (ChirpStack) and sends a LoRaWAN Data Packet to the Gateway.
-
-(Which means that Timers, SPI, GPIO Input / Ouput / Interrupt are working OK)
-
-The second script auto-restarts PineDio Stack and runs the [LVGL Test App](https://github.com/lupyuen/lvgltest-nuttx) (to test the touchscreen)...
-
--   [scripts/pinedio2.sh](scripts/pinedio2.sh)
-
-The [LVGL Test App](https://github.com/lupyuen/lvgltest-nuttx) renders a screen to the ST7789 SPI Display and waits for a Touch Event from the CST816S I2C Touch Panel.
-
-For the test to succeed, we must tap the screen to generate a Touch Event.
-
-[(Later we might automate this with a "Robot Finger")](https://youtu.be/mb3zcacDGPc)
-
-(See the output log below)
-
-# Select USB Device
-
-When we connect both PineDio Stack BL604 and PineCone BL602 to the SBC, we'll see two USB Devices: `/dev/ttyUSB0` and `/dev/ttyUSB1`
-
-How will we know which USB Device is for PineDio Stack and PineCone?
-
-```bash
-## Show /dev/ttyUSB0
-lsusb -v -s 1:3 2>&1 | grep bcdDevice | colrm 1 23
-
-## Show /dev/ttyUSB1
-lsusb -v -s 1:4 2>&1 | grep bcdDevice | colrm 1 23
-
-## Output for Pinedio Stack BL604:
-## 2.64
-## See https://gist.github.com/lupyuen/dc8c482f2b31b25d329cd93dc44f0044
-
-## Output for PineCone BL602:
-## 2.63
-## See https://gist.github.com/lupyuen/3ba0dc0789fd282bbfcf9dd5c3ff8908
-```
-
-Here's how we override the Default USB Device for PineDio Stack...
-
-```bash
-##  Tell the script to use /dev/ttyUSB1
-export USB_DEVICE=/dev/ttyUSB1
-
-##  Auto flash and test PineDio Stack BL604
-remote-bl602/scripts/pinedio.sh
-```
-
-TODO: Fix the script to use the correct USB Device
-
-# Upload Test Log
-
-To __upload the Test Log__ to GitHub Release Notes...
-
-```bash
-##  Run the script for Auto Flash and Test, capture the Test Log
-script -c remote-bl602/scripts/test.sh /tmp/release.log
-
-##  TODO: Install the GitHub CLI for uploading Release Notes: https://cli.github.com
-##  Log in a GitHub Token that has "repo" and "read:org" permissions
-
-##  Upload the Test Log to the GitHub Release Notes
-remote-bl602/scripts/upload.sh
-```
-
-[(See the Test Log)](https://github.com/lupyuen/incubator-nuttx/releases/tag/pinedio-2022-05-10)
-
-The `script` command runs the Auto Flash and Test Script `test.sh`, and captures the Test Log to `/tmp/release.log`.
-
-Then we run this script to upload the Test Log to GitHub Release Notes...
-
--   [scripts/upload.sh](scripts/upload.sh)
-
-The `upload.sh` script begins by calling the GitHub CLI to download the Auto-Generated GitHub Release Notes (populated by the GitHub Actions Build)...
-
-```bash
-##  Assumes the following files are present...
-##  /tmp/release.log: Test Log
-##  /tmp/release.tag: Release Tag (like pinedio-2022-05-10)
-
-##  Preserve the Auto-Generated GitHub Release Notes.
-##  Fetch the current GitHub Release Notes and extract the body text, like:
-##  "Merge updates from master by @lupyuen in https://github.com/lupyuen/incubator-nuttx/pull/82"
-gh release view \
-    `cat /tmp/release.tag` \
-    --json body \
-    --jq '.body' \
-    --repo lupyuen/incubator-nuttx \
-    >/tmp/release.old
-```
-
-In case the script is run twice, we search for the Previous Test Log...
-
-```bash
-##  Find the position of the Previous Test Log, starting with "```"
-cat /tmp/release.old \
-    | grep '```' --max-count=1 --byte-offset \
-    | sed 's/:.*//g' \
-    >/tmp/previous-log.txt
-prev=`cat /tmp/previous-log.txt`
-```
-
-And we remove the Previous Test Log, while preserving the Auto-Generated GitHub Release Notes...
-
-```bash
-##  If Previous Test Log exists, discard it
-if [ "$prev" != '' ]; then
-    cat /tmp/release.old \
-        | head --bytes=$prev \
-        >>/tmp/release2.log
-else
-    ##  Else copy the entire Release Notes
-    cat /tmp/release.old \
-        >>/tmp/release2.log
-    echo "" >>/tmp/release2.log
-fi
-```
-
-Just before adding the Test Log, we insert the Test Status...
-
-```bash
-##  Show the Test Status, like "All OK! BL602 has successfully joined the LoRaWAN Network"
-grep "^===== " /tmp/release.log \
-    | colrm 1 6 \
-    >>/tmp/release2.log
-```
-
-Then we embed the Test Log, taking care of the Special Characters...
-
-```bash
-##  Enquote the Test Log without Carriage Return and Terminal Control Characters
-##  https://stackoverflow.com/questions/17998978/removing-colors-from-output
-echo '```text' >>/tmp/release2.log
-cat /tmp/release.log \
-    | tr -d '\r' \
-    | sed 's/\x1B[@A-Z\\\]^_]\|\x1B\[[0-9:;<=>?]*[-!"#$%&'"'"'()*+,.\/]*[][\\@A-Z^_`a-z{|}~]//g' \
-    >>/tmp/release2.log
-echo '```' >>/tmp/release2.log
-```
-
-Finally we call the GitHub CLI to upload the Auto-Generated GitHub Release Notes appended with the Test Log...
-
-```bash
-##  Upload the Test Log to the GitHub Release Notes
-gh release edit \
-    `cat /tmp/release.tag` \
-    --notes-file /tmp/release2.log \
-    --repo lupyuen/incubator-nuttx
-```
-
-# SPI Test Failure
-
-Our Auto Test Scripts `test.sh` and `pinedio.sh` will check that the SX1262 LoRa Transceiver responds correctly to SPI Commands (like reading registers)...
+Test OK
 
 ```text
-nsh> spi_test2
-Get Status: received
-  a2 22 
-SX1262 Status is 2
-Read Register 8: received
-  a2 a2 a2 a2 80 
-SX1262 Register 8 is 0x80
-SX1262 is OK
-```
-
-This says that SX1262 Register 8 has value `0x80`, which is correct.
-
-If we see this error on BL602...
-
-```text
-SX1262 Register 8 is 0x00
-Error: SX1262 is NOT OK. Check the SPI connection
-```
-
-Check that the SX1262 Reset Pin is connected properly to the BL602 Reset Pin.
-
-(Which is connected to SBC GPIO 3)
-
-# LoRaWAN Test Failure
-
-TODO
-
-# Output Log for Upstream Build
-
-Below is the log for the __Daily Upstream Build__ (without the LoRaWAN Stack)...
-
-https://github.com/lupyuen/incubator-nuttx/releases/tag/upstream-2022-05-05
-
-```text
-pi@raspberrypi:~ $ ./upstream.sh
-+ cd /home/pi/remote-bl602
-+ git pull
-Already up to date.
-+ /home/pi/remote-bl602/scripts/test.sh
-+ '[' '' == '' ']'
-+ export BUILD_PREFIX=upstream
-+ BUILD_PREFIX=upstream
+Script started on Tue Jun 18 12:47:14 2024
+Command: ../autotest-nuttx-sg2000/scripts/test.sh
 + '[' '' == '' ']'
 ++ date +%Y-%m-%d
-+ export BUILD_DATE=2022-05-05
-+ BUILD_DATE=2022-05-05
++ export BUILD_DATE=2024-06-18
++ BUILD_DATE=2024-06-18
 + '[' '' == '' ']'
-+ export USB_DEVICE=/dev/ttyUSB0
-+ USB_DEVICE=/dev/ttyUSB0
-+ source /home/pi/.cargo/env
-++ export PATH=/home/pi/.cargo/bin:/usr/lib/go-1.13.6/bin:/home/pi/.cargo/bin:/usr/lib/go-1.13.6/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/local/games:/usr/games
-++ PATH=/home/pi/.cargo/bin:/usr/lib/go-1.13.6/bin:/home/pi/.cargo/bin:/usr/lib/go-1.13.6/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/local/games:/usr/games
++ export USB_DEVICE=/dev/tty.usbserial-0001
++ USB_DEVICE=/dev/tty.usbserial-0001
 + set +x
------ Download the latest upstream NuttX build for 2022-05-05
-+ wget -q https://github.com/lupyuen/incubator-nuttx/releases/download/upstream-2022-05-05/nuttx.zip -O /tmp/nuttx.zip
+----- Download the latest NuttX build for 2024-06-18
++ wget -q https://github.com/lupyuen/nuttx-sg2000/releases/download/nuttx-sg2000-2024-06-18/nuttx.zip -O /tmp/nuttx.zip
 + pushd /tmp
-/tmp ~/remote-bl602
+/tmp ~/sg2000/nuttx
 + unzip -o nuttx.zip
 Archive:  nuttx.zip
-  inflating: nuttx
-  inflating: nuttx.S
-  inflating: nuttx.bin
-  inflating: nuttx.config
-  inflating: nuttx.hex
-  inflating: nuttx.manifest
-  inflating: nuttx.map
+  inflating: nuttx                   
+  inflating: nuttx-export-12.5.1.tar.gz  
+  inflating: nuttx.S                 
+  inflating: nuttx.bin               
+  inflating: nuttx.config            
+  inflating: nuttx.hash              
+  inflating: nuttx.hex               
+  inflating: nuttx.manifest          
+  inflating: nuttx.map               
+  inflating: initrd                  
+  inflating: init.S                  
+  inflating: hello.S                 
+  inflating: Image                   
+  inflating: System.map              
 + popd
-~/remote-bl602
+~/sg2000/nuttx
 + set +x
------ Enable GPIO 2 and 3
------ Set GPIO 2 and 3 as output
------ Set GPIO 2 to High (BL602 Flashing Mode)
------ Toggle GPIO 3 High-Low-High (Reset BL602)
------ Toggle GPIO 3 High-Low-High (Reset BL602 again)
------ BL602 is now in Flashing Mode
------ Flash BL602 over USB UART with blflash
-+ blflash flash /tmp/nuttx.bin --port /dev/ttyUSB0
-[INFO  blflash::flasher] Start connection...
-[TRACE blflash::flasher] 5ms send count 55
-[TRACE blflash::flasher] handshake sent elapsed 394.944µs
-[INFO  blflash::flasher] Connection Succeed
-[INFO  blflash] Bootrom version: 1
-[TRACE blflash] Boot info: BootInfo { len: 14, bootrom_version: 1, otp_info: [0, 0, 0, 0, 3, 0, 0, 0, 61, 9d, c0, 5, b9, 18, 1d, 0] }
-[INFO  blflash::flasher] Sending eflash_loader...
-[INFO  blflash::flasher] Finished 2.553035396s 11.19KiB/s
-[TRACE blflash::flasher] 5ms send count 500
-[TRACE blflash::flasher] handshake sent elapsed 5.208118ms
-[INFO  blflash::flasher] Entered eflash_loader
-[INFO  blflash::flasher] Skip segment addr: 0 size: 47504 sha256 matches
-[INFO  blflash::flasher] Skip segment addr: e000 size: 272 sha256 matches
-[INFO  blflash::flasher] Skip segment addr: f000 size: 272 sha256 matches
-[INFO  blflash::flasher] Erase flash addr: 10000 size: 135824
-[INFO  blflash::flasher] Program flash... 1895df5ad1ea24dcab7c6ba5f86692424ce419d1da4e4c5b7dc06b4324d2cd59
-[INFO  blflash::flasher] Program done 1.614955738s 82.18KiB/s
-[INFO  blflash::flasher] Skip segment addr: 1f8000 size: 5671 sha256 matches
-[INFO  blflash] Success
-+ set +x
------ Set GPIO 2 to Low (BL602 Normal Mode)
------ Toggle GPIO 3 High-Low-High (Reset BL602)
------ BL602 is now in Normal Mode
------ Toggle GPIO 3 High-Low-High (Reset BL602)
------ Here is the BL602 Output...
-▒gpio_pin_register: Registering /dev/gpio0
-gpio_pin_register: Registering /dev/gpio1
-gpint_enable: Disable the interrupt
-gpio_pin_register: Registering /dev/gpio2
-bl602_spi_setfrequency: frequency=400000, actual=0
-bl602_spi_setbits: nbits=8
-bl602_spi_setmode: mode=0
-
-NuttShell (NSH) NuttX-10.3.0-RC1
-nsh> uname -a
-NuttX 10.3.0-RC1 fdef3a7b92 May  5 2022 02:23:24 risc-v bl602evb
-nsh> ls /dev
-/dev:
- console
- gpio0
- gpio1
- gpio2
- i2c0
- null
- spi0
- timer0
- zero
-nsh>
------ Send command to BL602: lorawan_test
-lorawan_test
-nsh: lorawan_test: command not found
-nsh>
-===== Boot OK
-
-+ read -p 'Press Enter to shutdown'
-Press Enter to shutdown
-```
-
-# Output Log for Upstream Build with Crash Analysis
-
-Below is the log for the __Daily Upstream Build__ with Crash Analysis (without the LoRaWAN Stack)...
-
-```text
-pi@raspberrypi:~/remote-bl602 $ sudo ./scripts/test.sh
-+ '[' '' == '' ']'
-+ export BUILD_PREFIX=upstream
-+ BUILD_PREFIX=upstream
-+ '[' '' == '' ']'
-++ date +%Y-%m-%d
-+ export BUILD_DATE=2022-01-16
-+ BUILD_DATE=2022-01-16
-+ source /root/.cargo/env
-++ case ":${PATH}:" in
-++ export PATH=/root/.cargo/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
-++ PATH=/root/.cargo/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
-+ set +x
------ Download the latest upstream NuttX build for 2022-01-16
-+ wget -q https://github.com/lupyuen/incubator-nuttx/releases/download/upstream-2022-01-16/nuttx.zip -O /tmp/nuttx.zip
-+ pushd /tmp
-/tmp /home/pi/remote-bl602
-+ unzip -o nuttx.zip
-Archive:  nuttx.zip
-  inflating: nuttx
-  inflating: nuttx.S
-  inflating: nuttx.bin
-  inflating: nuttx.config
-  inflating: nuttx.hex
-  inflating: nuttx.manifest
-  inflating: nuttx.map
-+ popd
-/home/pi/remote-bl602
-+ set +x
------ Enable GPIO 2 and 3
------ Set GPIO 2 and 3 as output
------ Set GPIO 2 to High (BL602 Flashing Mode)
------ Toggle GPIO 3 High-Low-High (Reset BL602)
------ Toggle GPIO 3 High-Low-High (Reset BL602 again)
------ BL602 is now in Flashing Mode
------ Flash BL602 over USB UART with blflash
-+ blflash flash /tmp/nuttx.bin --port /dev/ttyUSB0
-[INFO  blflash::flasher] Start connection...
-[TRACE blflash::flasher] 5ms send count 55
-[TRACE blflash::flasher] handshake sent elapsed 233.442µs
-[INFO  blflash::flasher] Connection Succeed
-[INFO  blflash] Bootrom version: 1
-[TRACE blflash] Boot info: BootInfo { len: 14, bootrom_version: 1, otp_info: [0, 0, 0, 0, 3, 0, 0, 0, 61, 9d, c0, 5, b9, 18, 1d, 0] }
-[INFO  blflash::flasher] Sending eflash_loader...
-[INFO  blflash::flasher] Finished 2.551582797s 11.20KiB/s
-[TRACE blflash::flasher] 5ms send count 500
-[TRACE blflash::flasher] handshake sent elapsed 5.459475ms
-[INFO  blflash::flasher] Entered eflash_loader
-[INFO  blflash::flasher] Skip segment addr: 0 size: 47504 sha256 matches
-[INFO  blflash::flasher] Skip segment addr: e000 size: 272 sha256 matches
-[INFO  blflash::flasher] Skip segment addr: f000 size: 272 sha256 matches
-[INFO  blflash::flasher] Skip segment addr: 10000 size: 85056 sha256 matches
-[INFO  blflash::flasher] Skip segment addr: 1f8000 size: 5671 sha256 matches
-[INFO  blflash] Success
-+ set +x
------ Set GPIO 2 to Low (BL602 Normal Mode)
------ Toggle GPIO 3 High-Low-High (Reset BL602)
------ BL602 is now in Normal Mode
------ Toggle GPIO 3 High-Low-High (Reset BL602)
------ Here is the BL602 Output...
-▒
-NuttShell (NSH) NuttX-10.2.0
-nsh> irq_unexpected_isr: ERROR irq: 1
-up_assert: Assertion failed at file:irq/irq_unexpectedisr.c line: 51 task: Idle Task
-riscv_registerdump: EPC: deadbeee
-riscv_registerdump: A0: 00000002 A1: 420146b0 A2: 42015140 A3: 4201481c
-riscv_registerdump: A4: 420150d0 A5: 00000000 A6: 00000002 A7: 00000000
-riscv_registerdump: T0: 00006000 T1: 00000003 T2: 41bd5488 T3: 00000064
-riscv_registerdump: T4: 00000000 T5: 00000000 T6: c48af7e4
-riscv_registerdump: S0: deadbeef S1: deadbeef S2: 420146b0 S3: 42014000
-riscv_registerdump: S4: 42015000 S5: 42012510 S6: 00000001 S7: 23007000
-riscv_registerdump: S8: 4201fa38 S9: 00000001 S10: 00000c40 S11: 42010510
-riscv_registerdump: SP: 420126b0 FP: deadbeef TP: 005952e5 RA: deadbeef
-riscv_dumpstate: sp:     420144b0
-riscv_dumpstate: IRQ stack:
-riscv_dumpstate:   base: 42012540
-riscv_dumpstate:   size: 00002000
-riscv_stackdump: 420144a0: 00001fe0 23011000 420144f0 230053a0 deadbeef deadbeef 23010ca4 00000033
-riscv_stackdump: 420144c0: deadbeef 00000001 4201fa38 23007000 00000001 42012510 42015000 00000001
-riscv_stackdump: 420144e0: 420125a8 42014000 42014500 230042e2 42014834 80007800 42014510 23001d3e
-riscv_stackdump: 42014500: 420171c0 42014000 42014520 23001cdc deadbeef deadbeef 42014540 23000db4
-riscv_stackdump: 42014520: deadbeef deadbeef deadbeef deadbeef deadbeef deadbeef 00000000 23000d04
-riscv_dumpstate: sp:     420126b0
-riscv_dumpstate: User stack:
-riscv_dumpstate:   base: 42010530
-riscv_dumpstate:   size: 00001fe0
-riscv_showtasks:    PID    PRI      USED     STACK   FILLED    COMMAND
-riscv_showtasks:   ----   ----      8088      8192    98.7%!   irq
-riscv_dump_task:      0      0       436      8160     5.3%    Idle Task
-riscv_dump_task:      1    100       516      8144     6.3%    nsh_main
-
------ Crash Analysis
-
------ Code Address 230053a0
-23005396:       854e                    mv      a0,s3
-23005398:       00000097                auipc   ra,0x0
-2300539c:       c8c080e7                jalr    -884(ra) # 23005024 <riscv_stackdump>
-/home/runner/work/incubator-nuttx/incubator-nuttx/nuttx/nuttx/arch/risc-v/src/common/riscv_assert.c:364
-      if (CURRENT_REGS)
-230053a0:       7f0a2783                lw      a5,2032(s4)
-230053a4:       c399                    beqz    a5,230053aa <up_assert+0x274>
-/home/runner/work/incubator-nuttx/incubator-nuttx/nuttx/nuttx/arch/risc-v/src/common/riscv_assert.c:366
-          sp = CURRENT_REGS[REG_SP];
-230053a6:       0087a983                lw      s3,8(a5)
-/home/runner/work/incubator-nuttx/incubator-nuttx/nuttx/nuttx/arch/risc-v/src/common/riscv_assert.c:369
-
------ Address 230042e2
-  up_assert(filename, linenum);
-230042da:       00001097                auipc   ra,0x1
-230042de:       e5c080e7                jalr    -420(ra) # 23005136 <up_assert>
-/home/runner/work/incubator-nuttx/incubator-nuttx/nuttx/nuttx/libs/libc/assert/lib_assert.c:37
-  exit(EXIT_FAILURE);
-230042e2:       4505                    li      a0,1
-230042e4:       ffffe097                auipc   ra,0xffffe
-230042e8:       138080e7                jalr    312(ra) # 2300241c <exit>
-
-230042ec <__errno>:
-__errno():
-
------ Code Address 23001d3e
-
-#else /* CONFIG_SMP */
-
-int sched_lock(void)
-{
-23001d3e:       1141                    addi    sp,sp,-16
-23001d40:       c422                    sw      s0,8(sp)
-23001d42:       c226                    sw      s1,4(sp)
-23001d44:       c606                    sw      ra,12(sp)
-23001d46:       0800                    addi    s0,sp,16
-/home/runner/work/incubator-nuttx/incubator-nuttx/nuttx/nuttx/sched/sched/sched_lock.c:228
-
------ Code Address 23001cdc
-  /* Record the new "running" task.  g_running_tasks[] is only used by
-   * assertion logic for reporting crashes.
-   */
-
-  g_running_tasks[this_cpu()] = this_task();
-23001cdc:       420147b7                lui     a5,0x42014
-23001ce0:       7fc7a703                lw      a4,2044(a5) # 420147fc <g_readytorun>
-/home/runner/work/incubator-nuttx/incubator-nuttx/nuttx/nuttx/sched/irq/irq_dispatch.c:201
-}
-23001ce4:       40b2                    lw      ra,12(sp)
-23001ce6:       4422                    lw      s0,8(sp)
-
------ Code Address 23000db4
-   * point state and the establish the correct address environment before
-   * returning from the interrupt.
-   */
-
-  if (regs != CURRENT_REGS)
-23000db4:       7f04a503                lw      a0,2032(s1)
-23000db8:       01250663                beq     a0,s2,23000dc4 <riscv_dispatch_irq+0x70>
-/home/runner/work/incubator-nuttx/incubator-nuttx/nuttx/nuttx/arch/risc-v/src/chip/bl602_irq_dispatch.c:106
-    {
-#ifdef CONFIG_ARCH_FPU
-      /* Restore floating point registers */
-
------ Code Address 23000d04
-/home/runner/work/incubator-nuttx/incubator-nuttx/nuttx/nuttx/arch/risc-v/src/common/riscv_exception_common.S:120
-
-  /* If context switch is needed, return a new sp     */
-
-  mv         sp, a0
-23000d04:       812a                    mv      sp,a0
-/home/runner/work/incubator-nuttx/incubator-nuttx/nuttx/nuttx/arch/risc-v/src/common/riscv_exception_common.S:121
-  REGLOAD    s0, REG_EPC(sp)     /* restore mepc      */
-23000d06:       4402                    lw      s0,0(sp)
-/home/runner/work/incubator-nuttx/incubator-nuttx/nuttx/nuttx/arch/risc-v/src/common/riscv_exception_common.S:122
-  csrw       mepc, s0
-
------ Data Address 4201481c
-4201481c g     O .bss   00000008 g_pendingtasks
-
------ Data Address 42012510
-42012510 l    d  .bss   00000000 .bss
-42012510 l     O .bss   00000008 g_idleargv
-42012510 g       .bss   00000000 __bss_start
-
------ Data Address 42010510
-42010510 l    d  .noinit        00000000 .noinit
-42010510 g       .data  00000000 __boot2_pt_addr_end
-42010510 g     O .noinit        00002000 g_idle_stack
-42010510 g       .data  00000000 _data_run_end
-42010510 g       .data  00000000 __boot2_pt_addr_start
-42010510 g       .data  00000000 __boot2_flash_cfg_start
-42010510 g       .data  00000000 __boot2_flash_cfg_end
-
------ Data Address 42012540
-42012540 g     O .bss   00002000 g_intstackalloc
-
------ Data Address 42012510
-42012510 l    d  .bss   00000000 .bss
-42012510 l     O .bss   00000008 g_idleargv
-42012510 g       .bss   00000000 __bss_start
-
------ Data Address 42014540
-42014540 l     O .bss   00000080 g_uart0rxbuffer
-42014540 g     O .bss   00000000 g_intstacktop
-
-pi@raspberrypi:~/remote-bl602 $
-```
-
-# Output Log for Release Build
-
-Below is the log for the __Release Build__ (includes the LoRaWAN Stack)...
-
-https://github.com/lupyuen/incubator-nuttx/releases/tag/release-2022-04-27
-
-```text
-pi@raspberrypi:~ $ export BUILD_PREFIX=release; remote-bl602/scripts/test.sh &&
- read -p "Press Enter to shutdown" && sudo shutdown now
-+ '[' release == '' ']'
-+ '[' '' == '' ']'
-++ date +%Y-%m-%d
-+ export BUILD_DATE=2022-04-27
-+ BUILD_DATE=2022-04-27
-+ source /home/pi/.cargo/env
-++ export PATH=/home/pi/.cargo/bin:/usr/lib/go-1.13.6/bin:/home/pi/.cargo/bin:/usr/lib/go-1.13.6/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/local/games:/usr/games
-++ PATH=/home/pi/.cargo/bin:/usr/lib/go-1.13.6/bin:/home/pi/.cargo/bin:/usr/lib/go-1.13.6/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/local/games:/usr/games
-+ set +x
------ Download the latest release NuttX build for 2022-04-27
-+ wget -q https://github.com/lupyuen/incubator-nuttx/releases/download/release-2022-04-27/nuttx.zip -O /tmp/nuttx.zip
-+ pushd /tmp
-/tmp ~
-+ unzip -o nuttx.zip
-Archive:  nuttx.zip
-  inflating: nuttx
-  inflating: nuttx.S
-  inflating: nuttx.bin
-  inflating: nuttx.board
-  inflating: nuttx.config
-  inflating: nuttx.hex
-  inflating: nuttx.manifest
-  inflating: nuttx.map
-+ popd
-~
-+ set +x
------ Enable GPIO 2 and 3
------ Set GPIO 2 and 3 as output
------ Set GPIO 2 to High (BL602 Flashing Mode)
------ Toggle GPIO 3 High-Low-High (Reset BL602)
------ Toggle GPIO 3 High-Low-High (Reset BL602 again)
------ BL602 is now in Flashing Mode
------ Flash BL602 over USB UART with blflash
-+ blflash flash /tmp/nuttx.bin --port /dev/ttyUSB0
-[INFO  blflash::flasher] Start connection...
-[TRACE blflash::flasher] 5ms send count 55
-[TRACE blflash::flasher] handshake sent elapsed 255.849µs
-[INFO  blflash::flasher] Connection Succeed
-[INFO  blflash] Bootrom version: 1
-[TRACE blflash] Boot info: BootInfo { len: 14, bootrom_version: 1, otp_info: [0, 0, 0, 0, 3, 0, 0, 0, 61, 9d, c0, 5, b9, 18, 1d, 0] }
-[INFO  blflash::flasher] Sending eflash_loader...
-[INFO  blflash::flasher] Finished 2.555431143s 11.18KiB/s
-[TRACE blflash::flasher] 5ms send count 500
-[TRACE blflash::flasher] handshake sent elapsed 5.185616ms
-[INFO  blflash::flasher] Entered eflash_loader
-[INFO  blflash::flasher] Skip segment addr: 0 size: 47504 sha256 matches
-[INFO  blflash::flasher] Skip segment addr: e000 size: 272 sha256 matches
-[INFO  blflash::flasher] Skip segment addr: f000 size: 272 sha256 matches
-[INFO  blflash::flasher] Erase flash addr: 10000 size: 361712
-[INFO  blflash::flasher] Program flash... 4284f227db04f3377f490bf455879ac200761a00cdfcbba9f0a7f28333c4e2d5
-[INFO  blflash::flasher] Program done 4.301111592s 82.13KiB/s
-[INFO  blflash::flasher] Skip segment addr: 1f8000 size: 5671 sha256 matches
-[INFO  blflash] Success
-+ set +x
------ Set GPIO 2 to Low (BL602 Normal Mode)
------ Toggle GPIO 3 High-Low-High (Reset BL602)
------ BL602 is now in Normal Mode
------ Toggle GPIO 3 High-Low-High (Reset BL602)
------ Here is the BL602 Output...
-▒bme280_register: Failed to init: -134
-bl602_bringup: ERROR: Failed to register BME280
-
-NuttShell (NSH) NuttX-10.3.0-RC0
-nsh>
------ Send command to BL602: lorawan_test
-uname -a
-NuttX 10.3.0-RC0 8afcc5bbf9-dirty Apr 27 2022 00:13:15 risc-v bl602evb
-nsh> lorawan_test
-init_entropy_pool
-offset = 2204
-temperature = 32.116600 Celsius
-offset = 2204
-temperature = 35.470142 Celsius
-offset = 2204
-temperature = 33.277439 Celsius
-offset = 2204
-temperature = 32.245583 Celsius
-
-###### ===================================== ######
-
-Application name   : lorawan_test
-Application version: 1.2.0
-GitHub base version: 5.0.0
-
-###### ===================================== ######
-
-init_event_queue
-TimerInit:     0x42017408
-TimerInit:     0x42017424
-TimerInit:     0x42017440
-TimerInit:     0x420174bc
-TimerInit:     0x42017570
-TimerInit:     0x4201758c
-TimerInit:     0x420175a8
-TimerInit:     0x420175c4
-TODO: RtcGetCalendarTime
-TODO: SX126xReset
-init_gpio
-DIO1 pintype before=5
-init_gpio: change DIO1 to Trigger GPIO Interrupt on Rising Edge
-gpio_ioctl: Requested pintype 8, but actual pintype 5
-DIO1 pintype after=5
-Starting process_dio1
-init_spi
-SX126xSetTxParams: power=22, rampTime=7
-SX126xSetPaConfig: paDutyCycle=4, hpMax=7, deviceSel=, paLut=1
-TimerInit:     0x42016508
-TimerInit:     0x42016474
-RadioSetModem
-RadioSetModem
-RadioSetPublicNetwork: public syncword=3444
-RadioSleep
-callout_handler: lock
-process_dio1 started
-process_dio1: event=0x42016530
-TODO: EepromMcuReadBuffer
-TODO: EepromMcuReadBuffer
-TODO: EepromMcuReadBuffer
-TODO: EepromMcuReadBuffer
-TODO: EepromMcuReadBuffer
-TODO: EepromMcuReadBuffer
-TODO: EepromMcuReadBuffer
-TODO: EepromMcuReadBuffer
-RadioSetModem
-RadioSetPublicNetwork: public syncword=3444
-DevEui      : 4B-C1-5E-E7-37-7B-B1-5B
-JoinEui     : 00-00-00-00-00-00-00-00
-Pin         : 00-00-00-00
-
-TimerInit:     0x42017060
-TimerInit:     0x4201707c
-TimerInit:     0x42016f40
-TODO: RtcGetCalendarTime
-TODO: RtcBkupRead
-TODO: RtcBkupRead
-RadioSetChannel: freq=923400000
-RadioSetTxConfig: modem=1, power=13, fdev=0, bandwidth=0, datarate=10, coderate=1, preambleLen=8, fixLen=0, crcOn=1, freqHopOn=0, hopPeriod=0, iqInverted=0, timeout=4000
-RadioSetTxConfig: SpreadingFactor=10, Bandwidth=4, CodingRate=1, LowDatarateOptimize=0, PreambleLength=8, HeaderType=0, PayloadLength=255, CrcMode=1, InvertIQ=0
-RadioStandby
-RadioSetModem
-SX126xSetTxParams: power=13, rampTime=7
-SX126xSetPaConfig: paDutyCycle=4, hpMax=7, deviceSel=0, paLut=1
-SecureElementRandomNumber: 0xcee1903f
-RadioSend: size=23
-00 00 00 00 00 00 00 00 00 5b b1 7b 37 e7 5e c1 4b 3f 90 dc e8 b4 45
-RadioSend: PreambleLength=8, HeaderType=0, PayloadLength=23, CrcMode=1, InvertIQ=0
-TimerStop:     0x42016508
-TimerStart2:   0x42016508, 4000 ms
-callout_reset: evq=0x42013010, ev=0x42016508
-
-###### =========== MLME-Request ============ ######
-######               MLME_JOIN               ######
-###### ===================================== ######
-STATUS      : OK
-StartTxProcess
-TimerInit:     0x42015954
-TimerSetValue: 0x42015954, 42249 ms
-OnTxTimerEvent: timeout in 42249 ms, event=0
-TimerStop:     0x42015954
-TimerSetValue: 0x42015954, 42249 ms
-TimerStart:    0x42015954
-TimerStop:     0x42015954
-TimerStart2:   0x42015954, 42249 ms
-callout_reset: evq=0x42013010, ev=0x42015954
-handle_event_queue
-DIO1 add event
-handle_event_queue: ev=0x42016530
-RadioOnDioIrq
-RadioIrqProcess
-IRQ_TX_DONE
-TimerStop:     0x42016508
-TODO: RtcGetCalendarTime
-TODO: RtcBkupRead
-RadioOnDioIrq
-RadioIrqProcess
-RadioSleep
-DIO1 add event
-TimerSetValue: 0x42017424, 4988 ms
-TimerStart:    0x42017424
-TimerStop:     0x42017424
-TimerStart2:   0x42017424, 4988 ms
-callout_reset: evq=0x42013010, ev=0x42017424
-TimerSetValue: 0x42017440, 5988 ms
-TimerStart:    0x42017440
-TimerStop:     0x42017440
-TimerStart2:   0x42017440, 5988 ms
-callout_reset: evq=0x42013010, ev=0x42017440
-TODO: RtcGetCalendarTime
-handle_event_queue: ev=0x42016530
-RadioOnDioIrq
-RadioIrqProcess
-RadioOnDioIrq
-RadioIrqProcess
-callout_handler: unlock
-callout_handler: evq=0x42013010, ev=0x42017424
-callout_handler: lock
-handle_event_queue: ev=0x42017424
-TimerStop:     0x42017424
-RadioStandby
-RadioSetChannel: freq=923400000
-RadioSetRxConfig
-RadioStandby
-RadioSetModem
-RadioSetRxConfig done
-RadioRx
-TimerStop:     0x42016474
-TimerStart2:   0x42016474, 3000 ms
-callout_reset: evq=0x42013010, ev=0x42016474
-RadioOnDioIrq
-RadioIrqProcess
-DIO1 add event
-handle_event_queue: ev=0x42016530
-RadioOnDioIrq
-RadioIrqProcess
-IRQ_PREAMBLE_DETECTED
-RadioOnDioIrq
-RadioIrqProcess
-DIO1 add event
-handle_event_queue: ev=0x42016530
-RadioOnDioIrq
-RadioIrqProcess
-IRQ_HEADER_VALID
-RadioOnDioIrq
-RadioIrqProcess
-DIO1 add event
-handle_event_queue: ev=0x42016530
-RadioOnDioIrq
-RadioIrqProcess
-IRQ_RX_DONE
-TimerStop:     0x42016474
-RadioOnDioIrq
-RadioIrqProcess
-RadioSleep
-DIO1 add event
-TimerStop:     0x42017440
-OnTxData
-
-###### =========== MLME-Confirm ============ ######
-STATUS      : OK
-OnJoinRequest
-###### ===========   JOINED     ============ ######
-
-OTAA
-
-DevAddr     :  011832DF
-
-
-DATA RATE   : DR_2
-
-TODO: EepromMcuWriteBuffer
-TODO: EepromMcuWriteBuffer
-TODO: EepromMcuWriteBuffer
-TODO: EepromMcuWriteBuffer
-TODO: EepromMcuWriteBuffer
-TODO: EepromMcuWriteBuffer
-UplinkProcess
-PrepareTxFrame: Transmit to LoRaWAN: Hi NuttX (9 bytes)
-PrepareTxFrame: status=0, maxSize=11, currentSize=11
-LmHandlerSend: Data frame
-TODO: RtcGetCalendarTime
-TODO: RtcBkupRead
-RadioSetChannel: freq=923200000
-RadioSetTxConfig: modem=1, power=13, fdev=0, bandwidth=0, datarate=9, coderate=1, preambleLen=8, fixLen=0, crcOn=1, freqHopOn=0, hopPeriod=0, iqInverted=0, timeout=4000
-RadioSetTxConfig: SpreadingFactor=9, Bandwidth=4, CodingRate=1, LowDatarateOptimize=0, PreambleLength=8, HeaderType=0, PayloadLength=128, CrcMode=1, InvertIQ=0
-RadioStandby
-RadioSetModem
-SX126xSetTxParams: power=13, rampTime=7
-SX126xSetPaConfig: paDutyCycle=4, hpMax=7, deviceSel=0, paLut=1
-RadioSend: size=22
-40 df 32 18 01 00 01 00 01 d6 ef 78 3b 57 fa 20 ec a3 da 88 17 2a
-RadioSend: PreambleLength=8, HeaderType=0, PayloadLength=22, CrcMode=1, InvertIQ=0
-TimerStop:     0x42016508
-TimerStart2:   0x42016508, 4000 ms
-callout_reset: evq=0x42013010, ev=0x42016508
-
-###### =========== MCPS-Request ============ ######
-######           MCPS_UNCONFIRMED            ######
-###### ===================================== ######
-STATUS      : OK
-PrepareTxFrame: Transmit OK
-handle_event_queue: ev=0x42016530
-RadioOnDioIrq
-RadioIrqProcess
-RadioOnDioIrq
-RadioIrqProcess
-DIO1 add event
-handle_event_queue: ev=0x42016530
-RadioOnDioIrq
-RadioIrqProcess
-IRQ_TX_DONE
-TimerStop:     0x42016508
-TODO: RtcGetCalendarTime
-TODO: RtcBkupRead
-RadioOnDioIrq
-RadioIrqProcess
-RadioSleep
-DIO1 add event
-TimerSetValue: 0x42017424, 980 ms
-TimerStart:    0x42017424
-TimerStop:     0x42017424
-TimerStart2:   0x42017424, 980 ms
-callout_reset: evq=0x42013010, ev=0x42017424
-TimerSetValue: 0x42017440, 1988 ms
-TimerStart:    0x42017440
-TimerStop:     0x42017440
-TimerStart2:   0x42017440, 1988 ms
-callout_reset: evq=0x42013010, ev=0x42017440
-TODO: RtcGetCalendarTime
-handle_event_queue: ev=0x42016530
-RadioOnDioIrq
-RadioIrqProcess
-RadioOnDioIrq
-RadioIrqProcess
-callout_handler: unlock
-callout_handler: evq=0x42013010, ev=0x42017424
-callout_handler: lock
-handle_event_queue: ev=0x42017424
-TimerStop:     0x42017424
-RadioStandby
-RadioSetChannel: freq=923200000
-RadioSetRxConfig
-RadioStandby
-RadioSetModem
-RadioSetRxConfig done
-RadioRx
-TimerStop:     0x42016474
-TimerStart2:   0x42016474, 3000 ms
-callout_reset: evq=0x42013010, ev=0x42016474
-RadioOnDioIrq
-RadioIrqProcess
-DIO1 add event
-handle_event_queue: ev=0x42016530
-RadioOnDioIrq
-RadioIrqProcess
-IRQ_RX_TX_TIMEOUT
-TimerStop:     0x42016474
-RadioOnDioIrq
-RadioIrqProcess
-RadioSleep
-DIO1 add event
-TimerStop:     0x42017440
-TimerStop:     0x42017408
-OnTxData
-
-###### =========== MCPS-Confirm ============ ######
-STATUS      : OK
-
-###### =====   UPLINK FRAME        1   ===== ######
-
-CLASS       : A
-
-TX PORT     : 1
-TX DATA     : UNCONFIRMED
-48 69 20 4E 75 74 74 58 00
-
-DATA RATE   : DR_3
-U/L FREQ    : 923200000
-TX POWER    : 0
-CHANNEL MASK: 0003
-
-TODO: EepromMcuWriteBuffer
-TODO: EepromMcuWriteBuffer
-UplinkProcess
-handle_event_queue: ev=0x42016530
-RadioOnDioIrq
-RadioIrqProcess
-RadioOnDioIrq
-RadioIrqProcess
-UplinkProcess
-
-===== All OK! BL602 has successfully joined the LoRaWAN Network
-
-Press Enter to shutdown
-```
-
-# Output Log for PineDio Stack BL604 Build
-
-Below is the log for the __PineDio Stack BL604 Build__ (includes the LoRaWAN Stack, ST7789 Display Driver, Touch Panel Driver, LVGL Test App)...
-
-https://github.com/lupyuen/incubator-nuttx/releases/tag/pinedio-2022-05-05
-
-```text
-pi@raspberrypi:~ $ ./pinedio.sh
-+ cd /home/pi/remote-bl602
-+ git pull
-Already up to date.
-+ lsusb -v -s 1:3
-+ grep bcdDevice
-+ colrm 1 23
-2.63
-+ lsusb -v -s 1:4
-+ grep bcdDevice
-+ colrm 1 23
-2.64
-+ export USB_DEVICE=/dev/ttyUSB1
-+ USB_DEVICE=/dev/ttyUSB1
-+ /home/pi/remote-bl602/scripts/pinedio.sh
-+ '[' '' == '' ']'
-+ export BUILD_PREFIX=pinedio
-+ BUILD_PREFIX=pinedio
-+ '[' '' == '' ']'
-++ date +%Y-%m-%d
-+ export BUILD_DATE=2022-05-05
-+ BUILD_DATE=2022-05-05
-+ '[' /dev/ttyUSB1 == '' ']'
-+ source /home/pi/.cargo/env
-++ export PATH=/home/pi/.cargo/bin:/usr/lib/go-1.13.6/bin:/home/pi/.cargo/bin:/usr/lib/go-1.13.6/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/local/games:/usr/games
-++ PATH=/home/pi/.cargo/bin:/usr/lib/go-1.13.6/bin:/home/pi/.cargo/bin:/usr/lib/go-1.13.6/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/local/games:/usr/games
-+ set +x
------ Download the latest pinedio NuttX build for 2022-05-05
-+ wget -q https://github.com/lupyuen/incubator-nuttx/releases/download/pinedio-2022-05-05/nuttx.zip -O /tmp/nuttx.zip
-+ pushd /tmp
-/tmp ~/remote-bl602
-+ unzip -o nuttx.zip
-Archive:  nuttx.zip
-  inflating: nuttx
-  inflating: nuttx.S
-  inflating: nuttx.bin
-  inflating: nuttx.board
-  inflating: nuttx.bringup
-  inflating: nuttx.config
-  inflating: nuttx.hex
-  inflating: nuttx.manifest
-  inflating: nuttx.map
-+ popd
-~/remote-bl602
-+ set +x
------ Enable GPIO 5 and 6
------ Set GPIO 5 and 6 as output
------ Set GPIO 5 to High (BL602 Flashing Mode)
------ Toggle GPIO 6 High-Low-High (Reset BL602)
------ Toggle GPIO 6 High-Low-High (Reset BL602 again)
------ BL602 is now in Flashing Mode
------ Flash BL602 over USB UART with blflash
-+ blflash flash /tmp/nuttx.bin --port /dev/ttyUSB1
-[INFO  blflash::flasher] Start connection...
-[TRACE blflash::flasher] 5ms send count 55
-[TRACE blflash::flasher] handshake sent elapsed 297.388µs
-[INFO  blflash::flasher] Connection Succeed
-[INFO  blflash] Bootrom version: 1
-[TRACE blflash] Boot info: BootInfo { len: 14, bootrom_version: 1, otp_info: [0, 0, 0, 0, 3, 0, 4, 40, ad, b8, e3, 4c, b9, 7c, 15, 0] }
-[INFO  blflash::flasher] Sending eflash_loader...
-[INFO  blflash::flasher] Finished 2.559526151s 11.17KiB/s
-[TRACE blflash::flasher] 5ms send count 500
-[TRACE blflash::flasher] handshake sent elapsed 5.21273ms
-[INFO  blflash::flasher] Entered eflash_loader
-[INFO  blflash::flasher] Skip segment addr: 0 size: 47504 sha256 matches
-[INFO  blflash::flasher] Skip segment addr: e000 size: 272 sha256 matches
-[INFO  blflash::flasher] Skip segment addr: f000 size: 272 sha256 matches
-[INFO  blflash::flasher] Erase flash addr: 10000 size: 504288
-[INFO  blflash::flasher] Program flash... 2bea6e72b3247483532ea61fb9415a9f6718d50bb9e7ffa8992ed078185a8f3f
-[INFO  blflash::flasher] Program done 6.002709982s 82.05KiB/s
-[INFO  blflash::flasher] Skip segment addr: 1f8000 size: 5671 sha256 matches
-[INFO  blflash] Success
-+ set +x
------ Set GPIO 5 to Low (BL602 Normal Mode)
------ Toggle GPIO 6 High-Low-High (Reset BL602)
------ BL602 is now in Normal Mode
------ Toggle GPIO 6 High-Low-High (Reset BL602)
------ Here is the BL602 Output...
-▒gplh_enable: WARNING: pin9: Already detached
-gplh_enable: WARNING: pin12: Already detached
-gplh_enable: WARNING: pin19: Already detached
-cst816s_register: path=/dev/input0, addr=21
-cst816s_register: Driver registered
-
-NuttShell (NSH) NuttX-10.3.0-RC0
-nsh> uname -a
-NuttX 10.3.0-RC0 4db8d2954d May  5 2022 08:58:49 risc-v bl602evb
-nsh> ls /dev
-/dev:
- console
- gpio10
- gpio12
- gpio14
- gpio15
- gpio19
- gpio20
- gpio21
- gpio3
- gpio9
- i2c0
- input0
- lcd0
- null
- spi0
- spitest0
- timer0
- urandom
- zero
-nsh>
------ Send command to BL602: lorawan_test
-lorawan_test
-init_entropy_pool
-offset = 2209
-temperature = 22.055979 Celsius
-offset = 2209
-temperature = 26.957306 Celsius
-offset = 2209
-temperature = 25.667484 Celsius
-offset = 2209
-temperature = 25.667484 Celsius
-
-###### ===================================== ######
-
-Application name   : lorawan_test
-Application version: 1.2.0
-GitHub base version: 5.0.0
-
-###### ===================================== ######
-
-init_event_queue
-TimerInit:     0x4201c76c
-TimerInit:     0x4201c788
-TimerInit:     0x4201c7a4
-TimerInit:     0x4201c820
-TimerInit:     0x4201c8d4
-TimerInit:     0x4201c8f0
-TimerInit:     0x4201c90c
-TimerInit:     0x4201c928
-TODO: RtcGetCalendarTime
-TODO: SX126xReset
-init_gpio
-DIO1 pintype before=5
-init_gpio: change DIO1 to Trigger GPIO gInterrupt on Rising Edge
-plh_enable: WARNING: pin19: Already detached
-DIO1 pintype after=8
-Starting process_dio1
-init_spi
-SX126xSetTxParams: power=22, rampTime=7
-SX126xSetPaConfig: paDutyCycle=4, hpMax=7, deviceSel=0, paLut=1
-TimerInit:     0x4201b86c
-TimerInit:     0x4201b7d8
-RadioSetModem
-RadioSetModem
-RadioSetPublicNetwork: public syncword=3444
-RadioSleep
-callout_handler: lock
-process_dio1 started
-process_dio1: event=0x4201b894
-TODO: EepromMcuReadBuffer
-TODO: EepromMcuReadBuffer
-TODO: EepromMcuReadBuffer
-TODO: EepromMcuReadBuffer
-TODO: EepromMcuReadBuffer
-TODO: EepromMcuReadBuffer
-TODO: EepromMcuReadBuffer
-TODO: EepromMcuReadBuffer
-RadioSetModem
-RadioSetPublicNetwork: public syncword=3444
-DevEui      : 4B-C1-5E-E7-37-7B-B1-5B
-JoinEui     : 00-00-00-00-00-00-00-00
-Pin         : 00-00-00-00
-
-TimerInit:     0x4201c3c4
-TimerInit:     0x4201c3e0
-TimerInit:     0x4201c2a4
-TODO: RtcGetCalendarTime
-TODO: RtcBkupRead
-TODO: RtcBkupRead
-RadioSetChannel: freq=923200000
-RadioSetTxConfig: modem=1, power=13, fdev=0, bandwidth=0, datarate=10, coderate=1, preambleLen=8, fixLen=0, crcOn=1, freqHopOn=0, hopPeriod=0, iqInverted=0, timeout=4000
-RadioSetTxConfig: SpreadingFactor=10, Bandwidth=4, CodingRate=1, LowDatarateOptimize=0, PreambleLength=8, HeaderType=0, PayloadLength=255, CrcMode=1, InvertIQ=0
-RadioStandby
-RadioSetModem
-SX126xSetTxParams: power=13, rampTime=7
-SX126xSetPaConfig: paDutyCycle=4, hpMax=7, deviceSel=0, paLut=1
-SecureElementRandomNumber: 0x2365edd0
-RadioSend: size=23
-00 00 00 00 00 00 00 00 00 5b b1 7b 37 e7 5e c1 4b d0 ed d6 02 42 41
-RadioSend: PreambleLength=8, HeaderType=0, PayloadLength=23, CrcMode=1, InvertIQ=0
-TimerStop:     0x4201b86c
-TimerStart2:   0x4201b86c, 4000 ms
-callout_reset: evq=0x420131a8, ev=0x4201b86c
-
-###### =========== MLME-Request ============ ######
-######               MLME_JOIN               ######
-###### ===================================== ######
-STATUS      : OK
-StartTxProcess
-TimerInit:     0x4201a90c
-TimerSetValue: 0x4201a90c, 42249 ms
-OnTxTimerEvent: timeout in 42249 ms, event=0
-TimerStop:     0x4201a90c
-TimerSetValue: 0x4201a90c, 42249 ms
-TimerStart:    0x4201a90c
-TimerStop:     0x4201a90c
-TimerStart2:   0x4201a90c, 42249 ms
-callout_reset: evq=0x420131a8, ev=0x4201a90c
-handle_event_queue
-DIO1 add event
-handle_event_queue: ev=0x4201b894
-RadioOnDioIrq
-RadioIrqProcess
-IRQ_TX_DONE
-TimerStop:     0x4201b86c
-TODO: RtcGetCalendarTime
-TODO: RtcBkupRead
-RadioOnDioIrq
-RadioIrqProcess
-RadioSleep
-TimerSetValue: 0x4201c788, 4988 ms
-TimerStart:    0x4201c788
-TimerStop:     0x4201c788
-TimerStart2:   0x4201c788, 4988 ms
-callout_reset: evq=0x420131a8, ev=0x4201c788
-TimerSetValue: 0x4201c7a4, 5988 ms
-TimerStart:    0x4201c7a4
-TimerStop:     0x4201c7a4
-TimerStart2:   0x4201c7a4, 5988 ms
-callout_reset: evq=0x420131a8, ev=0x4201c7a4
-TODO: RtcGetCalendarTime
-callout_handler: unlock
-callout_handler: evq=0x420131a8, ev=0x4201c788
-callout_handler: lock
-handle_event_queue: ev=0x4201c788
-TimerStop:     0x4201c788
-RadioStandby
-RadioSetChannel: freq=923200000
-RadioSetRxConfig
-RadioStandby
-RadioSetModem
-RadioSetRxConfig done
-RadioRx
-TimerStop:     0x4201b7d8
-TimerStart2:   0x4201b7d8, 3000 ms
-callout_reset: evq=0x420131a8, ev=0x4201b7d8
-RadioOnDioIrq
-RadioIrqProcess
-DIO1 add event
-handle_event_queue: ev=0x4201b894
-RadioOnDioIrq
-RadioIrqProcess
-IRQ_PREAMBLE_DETECTED
-RadioOnDioIrq
-RadioIrqProcess
-DIO1 add event
-handle_event_queue: ev=0x4201b894
-RadioOnDioIrq
-RadioIrqProcess
-IRQ_HEADER_VALID
-RadioOnDioIrq
-RadioIrqProcess
-DIO1 add event
-handle_event_queue: ev=0x4201b894
-RadioOnDioIrq
-RadioIrqProcess
-IRQ_RX_DONE
-TimerStop:     0x4201b7d8
-RadioOnDioIrq
-RadioIrqProcess
-RadioSleep
-TimerStop:     0x4201c7a4
-OnTxData
-
-###### =========== MLME-Confirm ============ ######
-STATUS      : OK
-OnJoinRequest
-###### ===========   JOINED     ============ ######
-
-OTAA
-
-DevAddr     :  00F76FBF
-
-
-DATA RATE   : DR_2
-
-TODO: EepromMcuWriteBuffer
-TODO: EepromMcuWriteBuffer
-TODO: EepromMcuWriteBuffer
-TODO: EepromMcuWriteBuffer
-TODO: EepromMcuWriteBuffer
-TODO: EepromMcuWriteBuffer
-UplinkProcess
-PrepareTxFrame: Transmit to LoRaWAN: Hi NuttX (9 bytes)
-PrepareTxFrame: status=0, maxSize=11, currentSize=11
-LmHandlerSend: Data frame
-TODO: RtcGetCalendarTime
-TODO: RtcBkupRead
-RadioSetChannel: freq=923400000
-RadioSetTxConfig: modem=1, power=13, fdev=0, bandwidth=0, datarate=9, coderate=1, preambleLen=8, fixLen=0, crcOn=1, freqHopOn=0, hopPeriod=0, iqInverted=0, timeout=4000
-RadioSetTxConfig: SpreadingFactor=9, Bandwidth=4, CodingRate=1, LowDatarateOptimize=0, PreambleLength=8, HeaderType=0, PayloadLength=128, CrcMode=1, InvertIQ=0
-RadioStandby
-RadioSetModem
-SX126xSetTxParams: power=13, rampTime=7
-SX126xSetPaConfig: paDutyCycle=4, hpMax=7, deviceSel=0, paLut=1
-RadioSend: size=22
-40 bf 6f f7 00 00 01 00 01 34 9a 34 20 a6 ed 59 55 ae 23 55 11 70
-RadioSend: PreambleLength=8, HeaderType=0, PayloadLength=22, CrcMode=1, InvertIQ=0
-TimerStop:     0x4201b86c
-TimerStart2:   0x4201b86c, 4000 ms
-callout_reset: evq=0x420131a8, ev=0x4201b86c
-
-###### =========== MCPS-Request ============ ######
-######           MCPS_UNCONFIRMED            ######
-###### ===================================== ######
-STATUS      : OK
-PrepareTxFrame: Transmit OK
-DIO1 add event
-handle_event_queue: ev=0x4201b894
-RadioOnDioIrq
-RadioIrqProcess
-IRQ_TX_DONE
-TimerStop:     0x4201b86c
-TODO: RtcGetCalendarTime
-TODO: RtcBkupRead
-RadioOnDioIrq
-RadioIrqProcess
-RadioSleep
-TimerSetValue: 0x4201c788, 980 ms
-TimerStart:    0x4201c788
-TimerStop:     0x4201c788
-TimerStart2:   0x4201c788, 980 ms
-callout_reset: evq=0x420131a8, ev=0x4201c788
-TimerSetValue: 0x4201c7a4, 1988 ms
-TimerStart:    0x4201c7a4
-TimerStop:     0x4201c7a4
-TimerStart2:   0x4201c7a4, 1988 ms
-callout_reset: evq=0x420131a8, ev=0x4201c7a4
-TODO: RtcGetCalendarTime
-callout_handler: unlock
-callout_handler: evq=0x420131a8, ev=0x4201c788
-callout_handler: lock
-handle_event_queue: ev=0x4201c788
-TimerStop:     0x4201c788
-RadioStandby
-RadioSetChannel: freq=923400000
-RadioSetRxConfig
-RadioStandby
-RadioSetModem
-RadioSetRxConfig done
-RadioRx
-TimerStop:     0x4201b7d8
-TimerStart2:   0x4201b7d8, 3000 ms
-callout_reset: evq=0x420131a8, ev=0x4201b7d8
-RadioOnDioIrq
-RadioIrqProcess
-DIO1 add event
-handle_event_queue: ev=0x4201b894
-RadioOnDioIrq
-RadioIrqProcess
-IRQ_RX_TX_TIMEOUT
-TimerStop:     0x4201b7d8
-RadioOnDioIrq
-RadioIrqProcess
-RadioSleep
-TimerStop:     0x4201c7a4
-TimerStop:     0x4201c76c
-OnTxData
-
-###### =========== MCPS-Confirm ============ ######
-STATUS      : OK
-
-###### =====   UPLINK FRAME        1   ===== ######
-
-CLASS       : A
-
-TX PORT     : 1
-TX DATA     : UNCONFIRMED
-48 69 20 4E 75 74 74 58 00
-
-DATA RATE   : DR_3
-U/L FREQ    : 923400000
-TX POWER    : 0
-CHANNEL MASK: 0003
-
-TODO: EepromMcuWriteBuffer
-TODO: EepromMcuWriteBuffer
-UplinkProcess
-
-===== All OK! BL602 has successfully joined the LoRaWAN Network
-
-+ /home/pi/remote-bl602/scripts/pinedio2.sh
-+ '[' '' == '' ']'
-+ export BUILD_PREFIX=pinedio
-+ BUILD_PREFIX=pinedio
-+ '[' '' == '' ']'
-++ date +%Y-%m-%d
-+ export BUILD_DATE=2022-05-05
-+ BUILD_DATE=2022-05-05
-+ '[' /dev/ttyUSB1 == '' ']'
-+ source /home/pi/.cargo/env
-++ export PATH=/home/pi/.cargo/bin:/usr/lib/go-1.13.6/bin:/home/pi/.cargo/bin:/usr/lib/go-1.13.6/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/local/games:/usr/games
-++ PATH=/home/pi/.cargo/bin:/usr/lib/go-1.13.6/bin:/home/pi/.cargo/bin:/usr/lib/go-1.13.6/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/local/games:/usr/games
-+ set +x
------ Enable GPIO 5 and 6
------ Set GPIO 5 and 6 as output
------ Set GPIO 5 to Low (BL602 Normal Mode)
------ Toggle GPIO 6 High-Low-High (Reset BL602)
------ BL602 is now in Normal Mode
------ Toggle GPIO 6 High-Low-High (Reset BL602)
------ Here is the BL602 Output...
-▒gplh_enable: WARNING: pin9: Already detached
-gplh_enable: WARNING: pin12: Already detached
-gplh_enable: WARNING: pin19: Already detached
-cst816s_register: path=/dev/input0, addr=21
-cst816s_register: Driver registered
-
-NuttShell (NSH) NuttX-10.3.0-RC0
-nsh> uname -a
-NuttX 10.3.0-RC0 4db8d2954d May  5 2022 08:58:49 risc-v bl602evb
-nsh> ls /dev
-/dev:
- console
- gpio10
- gpio12
- gpio14
- gpio15
- gpio19
- gpio20
- gpio21
- gpio3
- gpio9
- i2c0
- input0
- lcd0
- null
- spi0
- spitest0
- timer0
- urandom
- zero
-nsh>
------ Send command to BL602: lvgltest
-lvgltest
-tp_init: Opening /dev/input0
-cst816s_open:
-
------ HELLO HUMAN: TOUCH PINEDIO STACK NOW
-cst816s_poll_notify:
-cst816s_get_touch_data:
-cst816s_i2c_read:
-bl602_i2c_transfer: i2c transfer success
-bl602_i2c_transfer: i2c transfer success
-cst816s_get_touch_data: DOWN: id=0, touch=0, x=83, y=106
-cst816s_get_touch_data:   id:      0
-cst816s_get_touch_data:   flags:   19
-cst816s_get_touch_data:   x:       83
-cst816s_get_touch_data:   y:       106
-cst816s_get_touch_data:
-cst816s_i2c_read:
-bl602_i2c_transfer: i2c transfer success
-bl602_i2c_transfer: i2c transfer success
-cst816s_get_touch_data: DOWN: id=0, touch=0, x=83, y=106
-cst816s_get_touch_data:   id:      0
-cst816s_get_touch_data:   flags:   19
-cst816s_get_touch_data:   x:       83
-cst816s_get_touch_data:   y:       106
-cst816s_get_touch_data:
-cst816s_i2c_read:
-bl602_i2c_transfer: i2c transfer success
-bl602_i2c_transfer: i2c transfer success
-cst816s_get_touch_data: DOWN: id=0, touch=0, x=83, y=106
-cst816s_get_touch_data:   id:      0
-cst816s_get_touch_data:   flags:   19
-cst816s_get_touch_data:   x:       83
-cst816s_get_touch_data:   y:       106
-cst816s_get_touch_data:
-cst816s_i2c_read:
-bl602_i2c_transfer: i2c transfer success
-bl602_i2c_transfer: i2c transfer success
-cst816s_get_touch_data: DOWN: id=0, touch=0, x=83, y=106
-cst816s_get_touch_data:   id:      0
-cst816s_get_touch_data:   flags:   19
-cst816s_get_touch_data:   x:       83
-cst816s_get_touch_data:   y:       106
-cst816s_get_touch_data:
-cst816s_i2c_read:
-bl602_i2c_transfer: i2c transfer success
-bl602_i2c_transfer: i2c transfer success
-cst816s_get_touch_data: DOWN: id=0, touch=0, x=83, y=106
-cst816s_get_touch_data:   id:      0
-cst816s_get_touch_data:   flags:   19
-cst816s_get_touch_data:   x:       83
-cst816s_get_touch_data:   y:       106
-cst816s_get_touch_data:
-cst816s_i2c_read:
-bl602_i2c_transfer: i2c transfer success
-bl602_i2c_transfer: i2c transfer success
-cst816s_get_touch_data: DOWN: id=0, touch=0, x=83, y=106
-cst816s_get_touch_data:   id:      0
-cst816s_get_touch_data:   flags:   19
-cst816s_get_touch_data:   x:       83
-cst816s_get_touch_data:   y:       106
-cst816s_get_touch_data:
-cst816s_i2c_read:
-bl602_i2c_transfer: i2c transfer success
-bl602_i2c_transfer: i2c transfer success
-cst816s_get_touch_data: DOWN: id=0, touch=0, x=83, y=106
-cst816s_get_touch_data:   id:      0
-cst816s_get_touch_data:   flags:   19
-cst816s_get_touch_data:   x:       83
-cst816s_get_touch_data:   y:       106
-cst816s_get_touch_data:
-cst816s_i2c_read:
-bl602_i2c_transfer: i2c transfer success
-bl602_i2c_transfer: i2c transfer success
-cst816s_get_touch_data: DOWN: id=0, touch=0, x=83, y=106
-cst816s_get_touch_data:   id:      0
-cst816s_get_touch_data:   flags:   19
-cst816s_get_touch_data:   x:       83
-cst816s_get_touch_data:   y:       106
-cst816s_get_touch_data:
-cst816s_i2c_read:
-bl602_i2c_transfer: i2c transfer success
-bl602_i2c_transfer: i2c transfer success
-cst816s_get_touch_data: DOWN: id=0, touch=0, x=83, y=106
-cst816s_get_touch_data:   id:      0
-cst816_get_touch_data:   flags:   19
-cst816s_get_touch_data:   x:       83
-cst816s_get_touch_data:   y:       106
-cst816s_get_touch_data:
-cst816s_i2c_read:
-bl602_i2c_transfer: i2c transfer success
-bl602_i2c_transfer: i2c transfer success
-cst816s_get_touch_data: DOWN: id=0, touch=0, x=0, y=0
-cst816s_get_touch_data:   id:      0
-cst816s_get_touch_data:   flags:   19
-cst816s_get_touch_data:   x:       0
-cst816s_get_touch_data:   y:       0
-cst816s_get_touch_data:
-cst816s_i2c_read:
-bl602_i2c_transfer: i2c transfer success
-bl602_i2c_transfer: i2c transfer success
-cst816s_get_touch_data: DOWN: id=0, touch=0, x=83, y=106
-cst816s_get_touch_data:   id:      0
-cst816s_get_touch_data:   flags:   19
-cst816s_get_touch_data:   x:       83
-cst816s_get_touch_data:   y:       106
-cst816s_get_touch_data:
-cst816s_i2c_read:
-bl602_i2c_transfer: i2c transfer success
-bl602_i2c_transfer: i2c transfer success
-cst816s_get_touch_data: DOWN: id=0, touch=0, x=83, y=106
-cst816s_get_touch_data:   id:      0
-cst816s_get_touch_data:   flags:   19
-cst816s_get_touch_data:   x:       83
-cst816s_get_touch_data:   y:       106
-cst816s_get_touch_data:
-cst816s_i2c_read:
-bl602_i2c_transfer: i2c transfer success
-bl602_i2c_transfer: i2c transfer success
-cst816s_get_touch_data: DOWN: id=0, touch=0, x=83, y=106
-cst816s_get_touch_data:   id:      0
-cst816s_get_touch_data:   flags:   19
-cst816s_get_touch_data:   x:       83
-cst816s_get_touch_data:   y:       106
-cst816s_get_touch_data:
-cst816s_i2c_read:
-bl602_i2c_transfer: i2c transfer success
-bl602_i2c_transfer: i2c transfer success
-cst816s_get_touch_data: DOWN: id=0, touch=0, x=83, y=106
-cst816s_get_touch_data:   id:      0
-cst816s_get_touch_data:   flags:   19
-cst816s_get_touch_data:   x:      83
-cst816s_get_touch_data:   y:       106
-cst816s_get_touch_data:
-cst816s_i2c_read:
-bl602_i2c_transfer: i2c transfer success
-bl602_i2c_transfer: i2c transfer success
-cst816s_get_touch_data: Invalid touch data: id=9, touch=2, x=639, y=1688
-cst816s_get_touch_data: UP: id=0, touch=2, x=83, y=106
-cst16s_get_touch_data:   id:      0
-cst816s_get_touch_data:   flags:   0c
-cst816s_get_touch_data:   x:       83
-cst816s_get_touch_data:   y:       106
-
-===== All OK! BL604 has responded to touch
-
-+ read -p 'Press Enter to shutdown'
-Press Enter to shutdown
+NuttX Source: https://github.com/apache/nuttx/tree/28ae3b38499c6c7bac0d432658da263b9eab2981
+NuttX Apps: https://github.com/apache/nuttx-apps/tree/00f98947786892eaabf60b2e61fad553aee1c36c
+Image                                                 0%    0     0.0KB/s   --:-- ETAImage                                               100%   15MB  46.7MB/s   00:00    
+-rw-r--r-- 1 pi pi 15687256 Jun 18 05:47 /tftpboot/Image-sg2000
+Power on the SBC. Press Enter...
+
+Script started, output file is /tmp/test.log
+spawn screen /dev/tty.usbserial-0001 115200
+
+[?1049h[!p[?3;4l[4l>[4l[?1h=[0m(B[1;71r[H[2J[H[2JC.SCS/0/0.WD.URPL.SDI/25000000/6000000.BS/SD.PS.SD/0x0/0x1000/0x1000/0.PE.BS.SD/0x1000/0x8200/0x8200/0.BE.J.
+FSBL Jb2829:gbeb1483-dirty:2024-05-07T08:13:20+00:00
+st_on_reason=d0000
+st_off_reason=0
+P2S/0x1000/0xc00a200.
+SD/0x9200/0x1000/0x1000/0.P2E.
+DPS/0xa200/0x2000.
+SD/0xa200/0x2000/0x2000/0.DPE.
+DDR init.
+ddr_param[0]=0x78075562.
+pkg_type=1
+D2_4_1
+DDR3-4G-BGA
+Data rate=1866.
+DDR BIST PASS
+PLLS/OD.
+C2S/0xc200/0x9fe00000/0x200.
+SD/0xc200/0x200/0x200/0.RSC.
+C2E.
+MS/0xc400/0x80000000/0x1b000.
+SD/0xc400/0x1b000/0x1b000/0.ME.
+L2/0x27400.
+SD/0x27400/0x200/0x200/0.L2/0x414d3342/0xcafe170c/0x80200000/0x37e00/0x37e00
+COMP/1.
+SD/0x27400/0x37e00/0x37e00/0.DCP/0x80200020/0x1000000/0x81900020/0x37e00/1.
+DCP/0x75aa0/0.
+Loader_2nd loaded.
+Switch RTC mode to xtal32k
+Jump to monitor at 0x80000000.
+OPENSBI: next_addr=0x80200020 arg1=0x80080000
+OpenSBI v0.9
+   ____                    _____ ____ _____
+  / __ \                  / ____|  _ \_   _|
+ | |  | |_ __   ___ _ __ | (___ | |_) || |
+ | |  | | '_ \ / _ \ '_ \ \___ \|  _ < | |
+ | |__| | |_) |  __/ | | |____) | |_) || |_
+  \____/| .__/ \___|_| |_|_____/|____/_____|
+        | |
+        |_|
+
+Platform Name             : Milk-V DuoS
+Platform Features         : mfdeleg
+Platform HART Count       : 1
+Platform IPI Device       : clint
+Platform Timer Device     : clint
+Platform Console Device   : uart8250
+Platform HSM Device       : ---
+Platform SysReset Device  : ---
+Firmware Base             : 0x80000000
+Firmware Size             : 132 KB
+Runtime SBI Version       : 0.3
+
+Domain0 Name              : root
+Domain0 Boot HART         : 0
+Domain0 HARTs             : 0*
+Domain0 Region00          : 0x0000000074000000-0x000000007400ffff (I)
+Domain0 Region01          : 0x0000000080000000-0x000000008003ffff ()
+Domain0 Region02          : 0x0000000000000000-0xffffffffffffffff (R,W,X)
+Domain0 Next Address      : 0x0000000080200020
+Domain0 Next Arg1         : 0x0000000080080000
+Domain0 Next Mode         : S-mode
+Domain0 SysReset          : yes
+
+Boot HART ID              : 0
+Boot HART Domain          : root
+Boot HART ISA             : rv64imafdcvsux
+Boot HART Features        : scounteren,mcounteren,time
+Boot HART PMP Count       : 16
+Boot HART PMP Granularity : 4096
+Boot HART PMP Address Bits: 38
+Boot HART MHPM Count      : 8
+Boot HART MHPM Count      : 8
+Boot HART MIDELEG         : 0x0000000000000222
+Boot HART MEDELEG         : 0x000000000000b109
+
+
+U-Boot 2021.10-ga57aa1f2-dirty (May 07 2024 - 08:13:12 +0000) cvitek_cv181x
+
+DRAM:  510 MiB
+gd->relocaddr=0x9fbc6000. offset=0x1f9c6000
+set_rtc_register_for_power
+MMC:   cv-sd@4310000: 0, wifi-sd@4320000: 1
+Loading Environment from FAT... mmc1 : finished tuning, code:54
+OK
+In:    serial
+Out:   serial
+Err:   serial
+Net:   
+Warning: ethernet@4070000 (eth0) using random MAC address - ea:95:59:a9:44:9d
+eth0: ethernet@4070000
+Hit any key to stop autoboot:  1  0 
+ethernet@4070000 Waiting for PHY auto negotiation to complete.. done
+Speed: 100, full duplex
+BOOTP broadcast 1
+BOOTP broadcast 2
+*** Unhandled DHCP Option in OFFER/ACK: 43
+*** Unhandled DHCP Option in OFFER/ACK: 43
+DHCP client bound to address 192.168.31.69 (543 ms)
+Using ethernet@4070000 device
+TFTP from server 192.168.31.10; our IP address is 192.168.31.69
+Filename 'Image-sg2000'.
+Load address: 0x80200000
+Loading: *#################################################################
+[8C #################################################################
+[8C #################################################################
+[8C #################################################################
+[8C #################################################################
+[8C #################################################################
+[8C #################################################################
+[8C #################################################################
+[8C #################################################################
+[8C #################################################################
+[8C #################################################################
+[8C #################################################################
+[8C #################################################################
+[8C #################################################################
+[8C #################################################################
+[8C #################################################################
+[8C #############################
+[8C 1.2 MiB/s
+done
+Bytes transferred = 15687256 (ef5e58 hex)
+Speed: 100, full duplex
+Using ethernet@4070000 device
+TFTP from server 192.168.31.10; our IP address is 192.168.31.69
+Filename 'jh7110-star64-pine64.dtb'.
+Load address: 0x81200000
+Loading: *####
+[8C 1.1 MiB/s
+done
+Bytes transferred = 50235 (c43b hex)
+## Flattened Device Tree blob at 81200000
+   Booting using the fdt blob at 0x81200000
+   Loading Device Tree to 000000009f26e000, end 000000009f27d43a ... OK
+
+Starting kernel ...
+
+ABC
+NuttShell (NSH) NuttX-12.5.1
+nsh> [Kuname -a
+NuttX 12.5.1 28ae3b3849 Jun 18 2024 03:15:56 risc-v milkv_duos
+nsh> [Kfree
+                 total       used       free    maxused    maxfree  nused  nfree
+      Kmem:    2061304      11576    2049728      38160    2042848     33      5
+      Page:   20971520     647168   20324352   20324352
+nsh> [Khello
+Hello, World!!
+nsh> [Kgetprime
+Set thread priority to 10
+Set thread policy to SCHED_RR
+Start thread #0
+thread #0 started, looking for primes < 10000, doing 10 run(s)
+thread #0 finished, found 1230 primes, last one was 9973
+Done
+getprime took 18490 msec
+nsh> [Khello
+Hello, World!!
+nsh> [Kgetprime
+Set thread priority to 10
+Set thread policy to SCHED_RR
+Start thread #0
+thread #0 started, looking for primes < 10000, doing 10 run(s)
+thread #0 finished, found 1230 primes, last one was 9973
+Done
+getprime took 18490 msec
+nsh> [Kostest
+stdio_test: write fd=1
+stdio_test: Standard I/O Check: printf
+stdio_test: write fd=2
+stdio_test: Standard I/O Check: fprintf to stderr
+ostest_main: putenv(Variable1=BadValue3)
+ostest_main: setenv(Variable1, GoodValue1, TRUE)
+ostest_main: setenv(Variable2, BadValue1, FALSE)
+ostest_main: setenv(Variable2, GoodValue2, TRUE)
+ostest_main: setenv(Variable3, GoodValue3, FALSE)
+ostest_main: setenv(Variable3, BadValue2, FALSE)
+show_variable: Variable=Variable1 has value=GoodValue1
+show_variable: Variable=Variable2 has value=GoodValue2
+show_variable: Variable=Variable3 has value=GoodValue3
+ostest_main: Started user_main at PID=11
+
+user_main: Begin argument test
+user_main: Started with argc=5
+user_main: argv[0]="user_main"
+user_main: argv[1]="Arg1"
+user_main: argv[2]="Arg2"
+user_main: argv[3]="Arg3"
+user_main: argv[4]="Arg4"
+
+End of test memory usage:
+VARIABLE  BEFORE   AFTER
+======== ======== ========
+arena       80ff8    80ff8
+ordblks         2        2
+mxordblk    7cff0    7cff0
+uordblks     2688     2688
+fordblks    7e970    7e970
+
+user_main: getopt() test
+getopt():  Simple test
+getopt():  Invalid argument
+getopt():  Missing optional argument
+getopt_long():  Simple test
+getopt_long():  No short options
+getopt_long():  Argument for --option=argument
+getopt_long():  Invalid long option
+getopt_long():  Mixed long and short options
+getopt_long():  Invalid short option
+getopt_long():  Missing optional arguments
+getopt_long_only():  Mixed long and short options
+getopt_long_only():  Single hyphen long options
+
+End of test memory usage:
+VARIABLE  BEFORE   AFTER
+======== ======== ========
+arena       80ff8    80ff8
+ordblks         2        2
+mxordblk    7cff0    7cff0
+uordblks     2688     2688
+fordblks    7e970    7e970
+
+user_main: libc tests
+
+End of test memory usage:
+VARIABLE  BEFORE   AFTER
+======== ======== ========
+arena       80ff8    80ff8
+ordblks         2        2
+mxordblk    7cff0    7cff0
+uordblks     2688     2688
+fordblks    7e970    7e970
+show_variable: Variable=Variable1 has value=GoodValue1
+show_variable: Variable=Variable2 has value=GoodValue2
+show_variable: Variable=Variable3 has value=GoodValue3
+show_variable: Variable=Variable1 has no value
+show_variable: Variable=Variable2 has value=GoodValue2
+show_variable: Variable=Variable3 has value=GoodValue3
+
+End of test memory usage:
+VARIABLE  BEFORE   AFTER
+======== ======== ========
+arena       80ff8    80ff8
+ordblks         2        3
+mxordblk    7cff0    7cff0
+uordblks     2688     2668
+fordblks    7e970    7e990
+show_variable: Variable=Variable1 has no value
+show_variable: Variable=Variable2 has no value
+show_variable: Variable=Variable3 has no value
+
+End of test memory usage:
+VARIABLE  BEFORE   AFTER
+======== ======== ========
+arena       80ff8    80ff8
+ordblks         3        2
+mxordblk    7cff0    7cff0
+uordblks     2668     2588
+fordblks    7e990    7ea70
+
+user_main: setvbuf test
+setvbuf_test: Test NO buffering
+setvbuf_test: Using NO buffering
+setvbuf_test: Test default FULL buffering
+setvbuf_test: Using default FULL buffering
+setvbuf_test: Test FULL buffering, buffer size 64
+setvbuf_test: Using FULL buffering, buffer size 64
+setvbuf_test: Test FULL buffering, pre-allocated buffer
+setvbuf_test: Using FULL buffering, pre-allocated buffer
+setvbuf_test: Test LINE buffering, buffer size 64
+setvbuf_test: Using LINE buffering, buffer size 64
+setvbuf_test: Test FULL buffering, pre-allocated buffer
+setvbuf_test: Using FULL buffering, pre-allocated buffer
+
+End of test memory usage:
+VARIABLE  BEFORE   AFTER
+======== ======== ========
+arena       80ff8    80ff8
+ordblks         2        2
+mxordblk    7cff0    7cff0
+uordblks     2588     2588
+fordblks    7ea70    7ea70
+
+user_main: /dev/null test
+dev_null: Read 0 bytes from /dev/null
+dev_null: Wrote 1024 bytes to /dev/null
+
+End of test memory usage:
+VARIABLE  BEFORE   AFTER
+======== ======== ========
+arena       80ff8    80ff8
+ordblks         2        2
+mxordblk    7cff0    7cff0
+uordblks     2588     2588
+fordblks    7ea70    7ea70
+
+user_main: mutex test
+Initializing mutex
+Starting thread 1
+Starting thread 2
+[8C[8CThread1 Thread2
+[8CLoops   32[6C32
+[8CErrors  0[7C0
+
+End of test memory usage:
+VARIABLE  BEFORE   AFTER
+======== ======== ========
+arena       80ff8    80ff8
+ordblks         2        4
+mxordblk    7cff0    787f0
+uordblks     2588     35a8
+fordblks    7ea70    7da50
+
+user_main: timed mutex test
+mutex_test: Initializing mutex
+mutex_test: Starting thread
+pthread:  Started
+pthread:  Waiting for lock or timeout
+mutex_test: Unlocking
+pthread:  Got the lock
+pthread:  Waiting for lock or timeout
+pthread:  Got the timeout.  Terminating
+mutex_test: PASSED
+
+End of test memory usage:
+VARIABLE  BEFORE   AFTER
+======== ======== ========
+arena       80ff8    80ff8
+ordblks         4        3
+mxordblk    787f0    7a7f0
+uordblks     35a8     2d98
+fordblks    7da50    7e260
+
+user_main: cancel test
+cancel_test: Test 1a: Normal Cancellation
+cancel_test: Starting thread
+start_thread: Initializing mutex
+start_thread: Initializing cond
+start_thread: Starting thread
+start_thread: Yielding
+sem_waiter: Taking mutex
+sem_waiter: Starting wait for condition
+cancel_test: Canceling thread
+cancel_test: Joining
+cancel_test: waiter exited with result=0xffffffffffffffff
+cancel_test: PASS thread terminated with PTHREAD_CANCELED
+cancel_test: Test 2: Asynchronous Cancellation
+... Skipped
+cancel_test: Test 3: Cancellation of detached thread
+cancel_test: Re-starting thread
+restart_thread: Destroying cond
+restart_thread: Destroying mutex
+restart_thread: Re-starting thread
+start_thread: Initializing mutex
+start_thread: Initializing cond
+start_thread: Starting thread
+start_thread: Yielding
+sem_waiter: Taking mutex
+sem_waiter: Starting wait for condition
+cancel_test: Canceling thread
+cancel_test: Joining
+cancel_test: PASS pthread_join failed with status=ESRCH
+cancel_test: Test 5: Non-cancelable threads
+cancel_test: Re-starting thread (non-cancelable)
+restart_thread: Destroying cond
+restart_thread: Destroying mutex
+restart_thread: Re-starting thread
+start_thread: Initializing mutex
+start_thread: Initializing cond
+start_thread: Starting thread
+start_thread: Yielding
+sem_waiter: Taking mutex
+sem_waiter: Starting wait for condition
+sem_waiter: Setting non-cancelable
+cancel_test: Canceling thread
+cancel_test: Joining
+sem_waiter: Releasing mutex
+sem_waiter: Setting cancelable
+cancel_test: waiter exited with result=0xffffffffffffffff
+cancel_test: PASS thread terminated with PTHREAD_CANCELED
+cancel_test: Test 6: Cancel message queue wait
+cancel_test: Starting thread (cancelable)
+Skipped
+cancel_test: Test 7: Cancel signal wait
+cancel_test: Starting thread (cancelable)
+Skipped
+
+End of test memory usage:
+VARIABLE  BEFORE   AFTER
+======== ======== ========
+arena       80ff8    80ff8
+ordblks         3        3
+mxordblk    7a7f0    78ff0
+uordblks     2d98     4598
+fordblks    7e260    7ca60
+
+user_main: robust test
+robust_test: Initializing mutex
+robust_test: Starting thread
+robust_waiter: Taking mutex
+robust_waiter: Exiting with mutex
+robust_test: Take the lock again
+robust_test: Make the mutex consistent again.
+robust_test: Take the lock again
+robust_test: Joining
+robust_test: waiter exited with result=0
+robust_test: Test complete with nerrors=0
+
+End of test memory usage:
+VARIABLE  BEFORE   AFTER
+======== ======== ========
+arena       80ff8    80ff8
+ordblks         3        3
+mxordblk    78ff0    78ff0
+uordblks     4598     4598
+fordblks    7ca60    7ca60
+
+user_main: semaphore test
+sem_test: Initializing semaphore to 0
+sem_test: Starting waiter thread 1
+sem_test: Set thread 1 priority to 191
+waiter_func: Thread 1 Started
+waiter_func: Thread 1 initial semaphore value = 0
+waiter_func: Thread 1 waiting on semaphore
+sem_test: Starting waiter thread 2
+sem_test: Set thread 2 priority to 128
+waiter_func: Thread 2 Started
+waiter_func: Thread 2 initial semaphore value = -1
+waiter_func: Thread 2 waiting on semaphore
+sem_test: Starting poster thread 3
+sem_test: Set thread 3 priority to 64
+poster_func: Thread 3 started
+poster_func: Thread 3 semaphore value = -2
+poster_func: Thread 3 posting semaphore
+waiter_func: Thread 1 awakened
+waiter_func: Thread 1 new semaphore value = -1
+waiter_func: Thread 1 done
+poster_func: Thread 3 new semaphore value = -1
+poster_func: Thread 3 semaphore value = -1
+poster_func: Thread 3 posting semaphore
+waiter_func: Thread 2 awakened
+waiter_func: Thread 2 new semaphore value = 0
+waiter_func: Thread 2 done
+poster_func: Thread 3 new semaphore value = 0
+poster_func: Thread 3 done
+
+End of test memory usage:
+VARIABLE  BEFORE   AFTER
+======== ======== ========
+arena       80ff8    80ff8
+ordblks         3        5
+mxordblk    78ff0    767f0
+uordblks     4598     3db8
+fordblks    7ca60    7d240
+
+user_main: timed semaphore test
+semtimed_test: Initializing semaphore to 0
+semtimed_test: Waiting for two second timeout
+semtimed_test: PASS: first test returned timeout
+BEFORE: (63 sec, 906000000 nsec)
+AFTER:  (65 sec, 907000000 nsec)
+semtimed_test: Starting poster thread
+semtimed_test: Set thread 1 priority to 191
+semtimed_test: Starting poster thread 3
+semtimed_test: Set thread 3 priority to 64
+semtimed_test: Waiting for two second timeout
+poster_func: Waiting for 1 second
+poster_func: Posting
+semtimed_test: PASS: sem_timedwait succeeded
+BEFORE: (65 sec, 936000000 nsec)
+AFTER:  (66 sec, 942000000 nsec)
+
+End of test memory usage:
+VARIABLE  BEFORE   AFTER
+======== ======== ========
+arena       80ff8    80ff8
+ordblks         5        3
+mxordblk    767f0    7a7f0
+uordblks     3db8     2d98
+fordblks    7d240    7e260
+
+user_main: condition variable test
+cond_test: Initializing mutex
+cond_test: Initializing cond
+cond_test: Starting waiter
+cond_test: Set thread 1 priority to 128
+waiter_thread: Started
+cond_test: Starting signaler
+cond_test: Set thread 2 priority to 64
+thread_signaler: Started
+thread_signaler: Terminating
+cond_test: signaler terminated, now cancel the waiter
+cond_test: [5CWaiter  Signaler
+cond_test: Loops[8C32[6C32
+cond_test: Errors[7C0[7C0
+cond_test:
+cond_test: 0 times, waiter did not have to wait for data
+cond_test: 0 times, data was already available when the signaler run
+cond_test: 0 times, the waiter was in an unexpected state when the signaler ran
+
+End of test memory usage:
+VARIABLE  BEFORE   AFTER
+======== ======== ========
+arena       80ff8    80ff8
+ordblks         3        3
+mxordblk    7a7f0    787f0
+uordblks     2d98     2d98
+fordblks    7e260    7e260
+
+user_main: pthread_exit() test
+pthread_exit_test: Started pthread_exit_main at PID=30
+pthread_exit_main 30: Starting pthread_exit_thread
+pthread_exit_main 30: Sleeping for 5 seconds
+pthread_exit_thread 31: Sleeping for 10 second
+pthread_exit_main 30: Calling pthread_exit()
+pthread_exit_thread 31: Still running...
+
+End of test memory usage:
+VARIABLE  BEFORE   AFTER
+======== ======== ========
+arena       80ff8    80ff8
+ordblks         3        4
+mxordblk    787f0    767f0
+uordblks     2d98     4da8
+fordblks    7e260    7c250
+
+user_main: pthread_rwlock test
+pthread_rwlock: Initializing rwlock
+pthread_exit_thread 31: Exiting
+
+End of test memory usage:
+VARIABLE  BEFORE   AFTER
+======== ======== ========
+arena       80ff8    80ff8
+ordblks         4        5
+mxordblk    767f0    747f0
+uordblks     4da8     3db8
+fordblks    7c250    7d240
+
+user_main: pthread_rwlock_cancel test
+pthread_rwlock_cancel: Starting test
+
+End of test memory usage:
+VARIABLE  BEFORE   AFTER
+======== ======== ========
+arena       80ff8    80ff8
+ordblks         5        2
+mxordblk    747f0    7cff0
+uordblks     3db8     2588
+fordblks    7d240    7ea70
+
+user_main: timed wait test
+thread_waiter: Initializing mutex
+timedwait_test: Initializing cond
+timedwait_test: Starting waiter
+timedwait_test: Set thread 2 priority to 177
+thread_waiter: Taking mutex
+thread_waiter: Starting 5 second wait for condition
+timedwait_test: Joining
+thread_waiter: pthread_cond_timedwait timed out
+thread_waiter: Releasing mutex
+thread_waiter: Exit with status 0x12345678
+timedwait_test: waiter exited with result=0x12345678
+
+End of test memory usage:
+VARIABLE  BEFORE   AFTER
+======== ======== ========
+arena       80ff8    80ff8
+ordblks         2        3
+mxordblk    7cff0    7a7f0
+uordblks     2588     2d98
+fordblks    7ea70    7e260
+
+user_main: message queue test
+mqueue_test: Starting receiver
+mqueue_test: Set receiver priority to 128
+receiver_thread: Starting
+mqueue_test: Starting sender
+mqueue_test: Set sender thread priority to 64
+mqueue_test: Waiting for sender to complete
+sender_thread: Starting
+receiver_thread: mq_receive succeeded on msg 0
+sender_thread: mq_send succeeded on msg 0
+receiver_thread: mq_receive succeeded on msg 1
+sender_thread: mq_send succeeded on msg 1
+receiver_thread: mq_receive succeeded on msg 2
+sender_thread: mq_send succeeded on msg 2
+receiver_thread: mq_receive succeeded on msg 3
+sender_thread: mq_send succeeded on msg 3
+receiver_thread: mq_receive succeeded on msg 4
+sender_thread: mq_send succeeded on msg 4
+receiver_thread: mq_receive succeeded on msg 5
+sender_thread: mq_send succeeded on msg 5
+receiver_thread: mq_receive succeeded on msg 6
+sender_thread: mq_send succeeded on msg 6
+receiver_thread: mq_receive succeeded on msg 7
+sender_thread: mq_send succeeded on msg 7
+receiver_thread: mq_receive succeeded on msg 8
+sender_thread: mq_send succeeded on msg 8
+receiver_thread: mq_receive succeeded on msg 9
+sender_thread: mq_send succeeded on msg 9
+sender_thread: returning nerrors=0
+mqueue_test: Killing receiver
+receiver_thread: mq_receive interrupted!
+receiver_thread: returning nerrors=0
+mqueue_test: Canceling receiver
+mqueue_test: receiver has already terminated
+
+End of test memory usage:
+VARIABLE  BEFORE   AFTER
+======== ======== ========
+arena       80ff8    80ff8
+ordblks         3        4
+mxordblk    7a7f0    74ff0
+uordblks     2d98     65a8
+fordblks    7e260    7aa50
+
+user_main: timed message queue test
+timedmqueue_test: Starting sender
+timedmqueue_test: Waiting for sender to complete
+sender_thread: Starting
+sender_thread: mq_timedsend succeeded on msg 0
+sender_thread: mq_timedsend succeeded on msg 1
+sender_thread: mq_timedsend succeeded on msg 2
+sender_thread: mq_timedsend succeeded on msg 3
+sender_thread: mq_timedsend succeeded on msg 4
+sender_thread: mq_timedsend succeeded on msg 5
+sender_thread: mq_timedsend succeeded on msg 6
+sender_thread: mq_timedsend succeeded on msg 7
+sender_thread: mq_timedsend succeeded on msg 8
+sender_thread: mq_timedsend 9 timed out as expected
+sender_thread: returning nerrors=0
+timedmqueue_test: Starting receiver
+timedmqueue_test: Waiting for receiver to complete
+receiver_thread: Starting
+receiver_thread: mq_timedreceive succeed on msg 0
+receiver_thread: mq_timedreceive succeed on msg 1
+receiver_thread: mq_timedreceive succeed on msg 2
+receiver_thread: mq_timedreceive succeed on msg 3
+receiver_thread: mq_timedreceive succeed on msg 4
+receiver_thread: mq_timedreceive succeed on msg 5
+receiver_thread: mq_timedreceive succeed on msg 6
+receiver_thread: mq_timedreceive succeed on msg 7
+receiver_thread: mq_timedreceive succeed on msg 8
+receiver_thread: Receive 9 timed out as expected
+receiver_thread: returning nerrors=0
+timedmqueue_test: Test complete
+
+End of test memory usage:
+VARIABLE  BEFORE   AFTER
+======== ======== ========
+arena       80ff8    80ff8
+ordblks         4        3
+mxordblk    74ff0    78ff0
+uordblks     65a8     4598
+fordblks    7aa50    7ca60
+
+user_main: sigprocmask test
+sigprocmask_test: SUCCESS
+
+End of test memory usage:
+VARIABLE  BEFORE   AFTER
+======== ======== ========
+arena       80ff8    80ff8
+ordblks         3        3
+mxordblk    78ff0    78ff0
+uordblks     4598     4598
+fordblks    7ca60    7ca60
+
+user_main: signal handler test
+sighand_test: Initializing semaphore to 0
+sighand_test: Unmasking SIGCHLD
+sighand_test: Registering SIGCHLD handler
+sighand_test: Starting waiter task
+sighand_test: Started waiter_main pid=50
+waiter_main: Waiter started
+waiter_main: Unmasking signal 32
+waiter_main: Registering signal handler
+waiter_main: oact.sigaction=0 oact.sa_flags=0 oact.sa_mask=0000000000000000
+waiter_main: Waiting on semaphore
+sighand_test: Signaling pid=50 with signo=32 sigvalue=42
+waiter_main: sem_wait() successfully interrupted by signal
+waiter_main: done
+sighand_test: done
+
+End of test memory usage:
+VARIABLE  BEFORE   AFTER
+======== ======== ========
+arena       80ff8    80ff8
+ordblks         3        3
+mxordblk    78ff0    78ff0
+uordblks     4598     4598
+fordblks    7ca60    7ca60
+
+user_main: nested signal handler test
+signest_test: Starting signal waiter task at priority 101
+waiter_main: Waiter started
+waiter_main: Setting signal mask
+waiter_main: Registering signal handler
+waiter_main: Waiting on semaphore
+signest_test: Started waiter_main pid=52
+signest_test: Starting interfering task at priority 102
+interfere_main: Waiting on semaphore
+signest_test: Started interfere_main pid=53
+signest_test: Simple case:
+  Total signalled 1240  Odd=620 Even=620
+  Total handled   1240  Odd=620 Even=620
+  Total nested    0    Odd=0   Even=0  
+signest_test: With task locking
+  Total signalled 2480  Odd=1240 Even=1240
+  Total handled   2480  Odd=1240 Even=1240
+  Total nested    0    Odd=0   Even=0  
+signest_test: With intefering thread
+  Total signalled 3720  Odd=1860 Even=1860
+  Total handled   3720  Odd=1860 Even=1860
+  Total nested    0    Odd=0   Even=0  
+signest_test: done
+
+End of test memory usage:
+VARIABLE  BEFORE   AFTER
+======== ======== ========
+arena       80ff8    80ff8
+ordblks         3        4
+mxordblk    78ff0    74ff0
+uordblks     4598     65a8
+fordblks    7ca60    7aa50
+
+user_main: POSIX timer test
+timer_test: Initializing semaphore to 0
+timer_test: Unmasking signal 32
+timer_test: Registering signal handler
+timer_test: oact.sigaction=0xc00084d4 oact.sa_flags=0 oact.sa_mask=2aaaaaaaaaaaaaaa
+timer_test: Creating timer
+timer_test: Starting timer
+timer_test: Waiting on semaphore
+timer_expiration: Received signal 32
+timer_expiration: sival_int=42
+timer_expiration: si_code=2 (SI_TIMER)
+timer_expiration: ucontext=0
+timer_test: sem_wait() successfully interrupted by signal
+timer_test: g_nsigreceived=1
+timer_test: Waiting on semaphore
+timer_expiration: Received signal 32
+timer_expiration: sival_int=42
+timer_expiration: si_code=2 (SI_TIMER)
+timer_expiration: ucontext=0
+timer_test: sem_wait() successfully interrupted by signal
+timer_test: g_nsigreceived=2
+timer_test: Waiting on semaphore
+timer_expiration: Received signal 32
+timer_expiration: sival_int=42
+timer_expiration: si_code=2 (SI_TIMER)
+timer_expiration: ucontext=0
+timer_test: sem_wait() successfully interrupted by signal
+timer_test: g_nsigreceived=3
+timer_test: Waiting on semaphore
+timer_expiration: Received signal 32
+timer_expiration: sival_int=42
+timer_expiration: si_code=2 (SI_TIMER)
+timer_expiration: ucontext=0
+timer_test: sem_wait() successfully interrupted by signal
+timer_test: g_nsigreceived=4
+timer_test: Waiting on semaphore
+timer_expiration: Received signal 32
+timer_expiration: sival_int=42
+timer_expiration: si_code=2 (SI_TIMER)
+timer_expiration: ucontext=0
+timer_test: sem_wait() successfully interrupted by signal
+timer_test: g_nsigreceived=5
+timer_test: Deleting timer
+timer_test: done
+
+End of test memory usage:
+VARIABLE  BEFORE   AFTER
+======== ======== ========
+arena       80ff8    80ff8
+ordblks         4        4
+mxordblk    74ff0    74ff0
+uordblks     65a8     65a8
+fordblks    7aa50    7aa50
+
+user_main: round-robin scheduler test
+rr_test: Set thread priority to 1
+rr_test: Set thread policy to SCHED_RR
+rr_test: Starting first get_primes_thread
+         First get_primes_thread: 54
+rr_test: Starting second get_primes_thread
+         Second get_primes_thread: 55
+rr_test: Waiting for threads to complete -- this should take awhile
+         If RR scheduling is working, they should start and complete at
+         about the same time
+get_primes_thread id=1 started, looking for primes < 10000, doing 10 run(s)
+get_primes_thread id=2 started, looking for primes < 10000, doing 10 run(s)
+get_primes_thread id=1 finished, found 1230 primes, last one was 9973
+get_primes_thread id=2 finished, found 1230 primes, last one was 9973
+rr_test: Done
+
+End of test memory usage:
+VARIABLE  BEFORE   AFTER
+======== ======== ========
+arena       80ff8    80ff8
+ordblks         4        4
+mxordblk    74ff0    787f0
+uordblks     65a8     35a8
+fordblks    7aa50    7da50
+
+user_main: barrier test
+barrier_test: Initializing barrier
+barrier_test: Thread 0 created
+barrier_test: Thread 1 created
+barrier_test: Thread 2 created
+barrier_test: Thread 3 created
+barrier_test: Thread 4 created
+barrier_test: Thread 5 created
+barrier_test: Thread 6 created
+barrier_test: Thread 7 created
+barrier_func: Thread 0 started
+barrier_func: Thread 1 started
+barrier_func: Thread 2 started
+barrier_func: Thread 3 started
+barrier_func: Thread 4 started
+barrier_func: Thread 5 started
+barrier_func: Thread 6 started
+barrier_func: Thread 7 started
+barrier_func: Thread 0 calling pthread_barrier_wait()
+barrier_func: Thread 1 calling pthread_barrier_wait()
+barrier_func: Thread 2 calling pthread_barrier_wait()
+barrier_func: Thread 3 calling pthread_barrier_wait()
+barrier_func: Thread 4 calling pthread_barrier_wait()
+barrier_func: Thread 5 calling pthread_barrier_wait()
+barrier_func: Thread 6 calling pthread_barrier_wait()
+barrier_func: Thread 7 calling pthread_barrier_wait()
+barrier_func: Thread 7, back with status=PTHREAD_BARRIER_SERIAL_THREAD (I AM SPECIAL)
+barrier_func: Thread 0, back with status=0 (I am not special)
+barrier_func: Thread 1, back with status=0 (I am not special)
+barrier_func: Thread 2, back with status=0 (I am not special)
+barrier_func: Thread 3, back with status=0 (I am not special)
+barrier_func: Thread 4, back with status=0 (I am not special)
+barrier_func: Thread 5, back with status=0 (I am not special)
+barrier_func: Thread 6, back with status=0 (I am not special)
+barrier_func: Thread 7 done
+barrier_func: Thread 0 done
+barrier_test: Thread 0 completed with result=0
+barrier_func: Thread 1 done
+barrier_test: Thread 1 completed with result=0
+barrier_func: Thread 2 done
+barrier_test: Thread 2 completed with result=0
+barrier_func: Thread 3 done
+barrier_func: Thread 4 done
+barrier_test: Thread 3 completed with result=0
+barrier_test: Thread 4 completed with result=0
+barrier_func: Thread 5 done
+barrier_func: Thread 6 done
+barrier_test: Thread 5 completed with result=0
+barrier_test: Thread 6 completed with result=0
+barrier_test: Thread 7 completed with result=0
+
+End of test memory usage:
+VARIABLE  BEFORE   AFTER
+======== ======== ========
+arena       80ff8    80ff8
+ordblks         4       10
+mxordblk    787f0    6c7f0
+uordblks     35a8     6608
+fordblks    7da50    7a9f0
+
+user_main: scheduler lock test
+sched_lock: Starting lowpri_thread at 97
+sched_lock: Set lowpri_thread priority to 97
+sched_lock: Starting highpri_thread at 98
+sched_lock: Set highpri_thread priority to 98
+sched_lock: Waiting...
+sched_lock: PASSED No pre-emption occurred while scheduler was locked.
+sched_lock: Starting lowpri_thread at 97
+sched_lock: Set lowpri_thread priority to 97
+sched_lock: Starting highpri_thread at 98
+sched_lock: Set highpri_thread priority to 98
+sched_lock: Waiting...
+sched_lock: PASSED No pre-emption occurred while scheduler was locked.
+sched_lock: Finished
+
+End of test memory usage:
+VARIABLE  BEFORE   AFTER
+======== ======== ========
+arena       80ff8    80ff8
+ordblks        10        4
+mxordblk    6c7f0    787f0
+uordblks     6608     35a8
+fordblks    7a9f0    7da50
+
+user_main: vfork() test DISABLED (CONFIG_BUILD_KERNEL)
+
+Final memory usage:
+VARIABLE  BEFORE   AFTER
+======== ======== ========
+arena       80ff8    80ff8
+ordblks         2        4
+mxordblk    7cff0    787f0
+uordblks     2688     35a8
+fordblks    7e970    7da50
+user_main: Exiting
+ostest_main: Exiting with status 0
+===== Test OK
+
+
+Script done, output file is /tmp/test.log
+
+Command exit status: 0
+Script done on Tue Jun 18 12:50:41 2024
 ```
