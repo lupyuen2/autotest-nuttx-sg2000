@@ -32,7 +32,7 @@ Here are the Automated Testing Scripts...
 Test OK
 
 ```text
-Script started on Tue Jun 18 13:36:36 2024
+Script started on Tue Jun 18 14:03:15 2024
 Command: /Users/luppy/sg2000/autotest-nuttx-sg2000/scripts/test.sh
 + '[' '' == '' ']'
 ++ date +%Y-%m-%d
@@ -69,16 +69,16 @@ NuttX Source: https://github.com/apache/nuttx/tree/28ae3b38499c6c7bac0d432658da2
 NuttX Apps: https://github.com/apache/nuttx-apps/tree/00f98947786892eaabf60b2e61fad553aee1c36c
 ----- Copy NuttX Image to TFTP Server
 + scp /tmp/Image tftpserver:/tftpboot/Image-sg2000
-Image                                                               0%    0     0.0KB/s   --:-- ETAImage                                                             100%   15MB  36.7MB/s   00:00    
+Image                                                               0%    0     0.0KB/s   --:-- ETAImage                                                             100%   15MB  44.7MB/s   00:00    
 + ssh tftpserver ls -l /tftpboot/Image-sg2000
--rw-r--r-- 1 pi pi 15687256 Jun 18 06:36 /tftpboot/Image-sg2000
+-rw-r--r-- 1 pi pi 15687256 Jun 18 07:03 /tftpboot/Image-sg2000
 + set +x
-Power on the SBC. Press Enter...
+Power off the SBC, press Enter, then power on...
 
 Script started, output file is /tmp/test.log
 spawn screen /dev/tty.usbserial-0001 115200
 
-[?1049h[22;0;0t[!p[?3;4l[4l>[4l[?1h=[0m(B[1;50r[H[2J[H[2JC.SCS/0/0.WD.URPL.SDI/25000000/6000000.BS/SD.PS.SD/0x0/0x1000/0x1000/0.PE.BS.SD/0x1000/0x8200/0x8200/0.BE.J.
+C.SCS/0/0.WD.URPL.SDI/25000000/6000000.BS/SD.PS.SD/0x0/0x1000/0x1000/0.PE.BS.SD/0x1000/0x8200/0x8200/0.BE.J.
 FSBL Jb2829:gbeb1483-dirty:2024-05-07T08:13:20+00:00
 st_on_reason=d0000
 st_off_reason=0
@@ -166,47 +166,47 @@ In:    serial
 Out:   serial
 Err:   serial
 Net:   
-Warning: ethernet@4070000 (eth0) using random MAC address - 1e:4f:c4:b1:d4:70
+Warning: ethernet@4070000 (eth0) using random MAC address - 6a:1e:42:92:96:c9
 eth0: ethernet@4070000
-Hit any key to stop autoboot:  1  0 
-ethernet@4070000 Waiting for PHY auto negotiation to complete.. done
+Hit any key to stop autoboot:  1     0 
+ethernet@4070000 Waiting for PHY auto negotiation to complete... done
 Speed: 100, full duplex
 BOOTP broadcast 1
 BOOTP broadcast 2
 *** Unhandled DHCP Option in OFFER/ACK: 43
 *** Unhandled DHCP Option in OFFER/ACK: 43
-DHCP client bound to address 192.168.31.41 (547 ms)
+DHCP client bound to address 192.168.31.242 (556 ms)
 Using ethernet@4070000 device
-TFTP from server 192.168.31.10; our IP address is 192.168.31.41
+TFTP from server 192.168.31.10; our IP address is 192.168.31.242
 Filename 'Image-sg2000'.
 Load address: 0x80200000
-Loading: *#################################################################
-[8C #################################################################
-[8C #################################################################
-[8C #################################################################
-[8C #################################################################
-[8C #################################################################
-[8C #################################################################
-[8C #################################################################
-[8C #################################################################
-[8C #################################################################
-[8C #################################################################
-[8C #################################################################
-[8C #################################################################
-[8C #################################################################
-[8C #################################################################
-[8C #################################################################
-[8C #############################
-[8C 1.2 MiB/s
+Loading: * #################################################################
+ #################################################################
+ #################################################################
+ #################################################################
+ #################################################################
+ #################################################################
+ #################################################################
+ #################################################################
+ #################################################################
+ #################################################################
+ #################################################################
+ #################################################################
+ #################################################################
+ #################################################################
+ #################################################################
+ #################################################################
+ #############################
+ 1.2 MiB/s
 done
 Bytes transferred = 15687256 (ef5e58 hex)
 Speed: 100, full duplex
 Using ethernet@4070000 device
-TFTP from server 192.168.31.10; our IP address is 192.168.31.41
+TFTP from server 192.168.31.10; our IP address is 192.168.31.242
 Filename 'jh7110-star64-pine64.dtb'.
 Load address: 0x81200000
-Loading: *####
-[8C 1.2 MiB/s
+Loading: * ####
+ 1.2 MiB/s
 done
 Bytes transferred = 50235 (c43b hex)
 ## Flattened Device Tree blob at 81200000
@@ -232,7 +232,7 @@ Start thread #0
 thread #0 started, looking for primes < 10000, doing 10 run(s)
 thread #0 finished, found 1230 primes, last one was 9973
 Done
-getprime took 18491 msec
+getprime took 18489 msec
 nsh> hello
 Hello, World!!
 nsh> getprime
@@ -377,9 +377,9 @@ user_main: mutex test
 Initializing mutex
 Starting thread 1
 Starting thread 2
-[8C[8CThread1 Thread2
-[8CLoops   32[6C32
-[8CErrors  0[7C0
+Thread1 Thread2
+Loops   3232
+Errors  00
 
 End of test memory usage:
 VARIABLE  BEFORE   AFTER
@@ -569,9 +569,9 @@ cond_test: Set thread 2 priority to 64
 thread_signaler: Started
 thread_signaler: Terminating
 cond_test: signaler terminated, now cancel the waiter
-cond_test: [5CWaiter  Signaler
-cond_test: Loops[8C32[6C32
-cond_test: Errors[7C0[7C0
+cond_test: Waiter  Signaler
+cond_test: Loops3232
+cond_test: Errors00
 cond_test:
 cond_test: 0 times, waiter did not have to wait for data
 cond_test: 0 times, data was already available when the signaler run
@@ -887,19 +887,19 @@ user_main: barrier test
 barrier_test: Initializing barrier
 barrier_test: Thread 0 created
 barrier_test: Thread 1 created
+barrier_test: Thread 2 created
+barrier_test: Thread 3 created
+barrier_test: Thread 4 created
+barrier_test: Thread 5 created
+barrier_test: Thread 6 created
+barrier_test: Thread 7 created
 barrier_func: Thread 0 started
 barrier_func: Thread 1 started
-barrier_test: Thread 2 created
 barrier_func: Thread 2 started
-barrier_test: Thread 3 created
 barrier_func: Thread 3 started
-barrier_test: Thread 4 created
 barrier_func: Thread 4 started
-barrier_test: Thread 5 created
 barrier_func: Thread 5 started
-barrier_test: Thread 6 created
 barrier_func: Thread 6 started
-barrier_test: Thread 7 created
 barrier_func: Thread 7 started
 barrier_func: Thread 0 calling pthread_barrier_wait()
 barrier_func: Thread 1 calling pthread_barrier_wait()
@@ -985,5 +985,5 @@ ostest_main: Exiting with status 0
 Script done, output file is /tmp/test.log
 
 Command exit status: 0
-Script done on Tue Jun 18 13:39:42 2024
+Script done on Tue Jun 18 14:06:22 2024
 ```

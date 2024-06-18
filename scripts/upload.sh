@@ -49,12 +49,17 @@ grep "^===== " /tmp/release.log \
 set -e  ##  Exit when any command fails
 
 ##  Enquote the Test Log without Carriage Return and Terminal Control Characters
-##  TODO: Doesn't work on macOS
+##  TODO: The long pattern for sed doesn't work on macOS
 ##  https://stackoverflow.com/questions/17998978/removing-colors-from-output
 echo '```text' >>/tmp/release2.log
 cat /tmp/release.log \
     | tr -d '\r' \
+    | tr -d '\r' \
+    | sed 's/\x08/ /g' \
+    | sed 's/\x1B(B//g' \
     | sed 's/\x1B\[K//g' \
+    | sed 's/\x1B[<=>]//g' \
+    | sed 's/\x1B\[[0-9:;<=>?]*[!]*[A-Za-z]//g' \
     | sed 's/\x1B[@A-Z\\\]^_]\|\x1B\[[0-9:;<=>?]*[-!"#$%&'"'"'()*+,.\/]*[][\\@A-Z^_`a-z{|}~]//g' \
     >>/tmp/release2.log
 echo '```' >>/tmp/release2.log

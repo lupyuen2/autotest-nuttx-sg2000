@@ -43,7 +43,7 @@ ssh tftpserver ls -l /tftpboot/Image-sg2000
 set +x  ##  Disable echo
 
 ## TODO: Reboot the SBC with a Smart Power Plug
-echo Power on the SBC. Press Enter...
+echo Power off the SBC, press Enter, then power on...
 read
 
 ##  Run the Automated Test
