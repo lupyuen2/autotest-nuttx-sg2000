@@ -39,7 +39,9 @@ echo "nuttx-sg2000-$BUILD_DATE" >/tmp/release.tag
 scp /tmp/Image tftpserver:/tftpboot/Image-sg2000
 ssh tftpserver ls -l /tftpboot/Image-sg2000
 
-## TODO: Reboot the SBC
+## TODO: Reboot the SBC with a Smart Power Plug
+echo Power on the SBC. Press Enter...
+read
 
 ##  Run the Automated Test
 script /tmp/test.log $SCRIPT_DIR/nuttx.exp
