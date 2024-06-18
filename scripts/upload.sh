@@ -3,6 +3,8 @@
 ## /tmp/release.log: Test Log
 ## /tmp/release.tag: Release Tag
 
+repo=lupyuen/nuttx-sg2000
+
 set -e  ##  Exit when any command fails
 
 rm -f /tmp/release2.log
@@ -14,7 +16,7 @@ gh release view \
     `cat /tmp/release.tag` \
     --json body \
     --jq '.body' \
-    --repo lupyuen/incubator-nuttx \
+    --repo $repo \
     >/tmp/release.old
 set +x  ##  Don't echo commands
 
@@ -60,7 +62,7 @@ set -x  ##  Echo commands
 gh release edit \
     `cat /tmp/release.tag` \
     --notes-file /tmp/release2.log \
-    --repo lupyuen/incubator-nuttx
+    --repo $repo
 set +x  ##  Don't echo commands
 
 ##  Show the Test Status

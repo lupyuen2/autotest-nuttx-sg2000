@@ -1,0 +1,61 @@
+#!/usr/bin/expect
+## Expect Script for Testing NuttX over a USB Serial Port 
+
+## Wait at most 300 seconds
+set timeout 300
+
+## For every 1 character sent, wait 0.001 milliseconds
+set send_slow {1 0.001}
+
+## Connect to SBC over USB Serial Port
+spawn screen /dev/tty.usbserial-0001 115200
+
+## Wake up NSH Shell
+send -s "\r"
+
+## Wait for the prompt and enter `uname -a`
+expect "nsh> "
+send -s "uname -a\r"
+
+## Wait for the prompt and enter `free`
+expect "nsh> "
+send -s "free\r"
+
+## Wait for the prompt and enter `hello`
+expect "nsh> "
+send -s "hello\r"
+
+## Wait for the prompt and enter `getprime`
+expect "nsh> "
+send -s "getprime\r"
+
+## Wait for the prompt and enter `hello`
+expect "nsh> "
+send -s "hello\r"
+
+## Wait for the prompt and enter `getprime`
+expect "nsh> "
+send -s "getprime\r"
+
+## Wait for the prompt and enter `ostest`
+expect "nsh> "
+send -s "ostest\r"
+
+## Check the response...
+expect {
+  ## If we see this message, exit normally
+  "ostest_main: Exiting with status 0" { 
+    ## Terminate the session: Ctrl-A k y
+    send "\x01ky"
+    puts "===== Test OK\n"
+    exit 0 
+  }
+
+  ## If timeout, exit with an error
+  timeout { 
+    ## Terminate the session: Ctrl-A k y
+    send "\x01ky"
+    puts "===== Error: Test Failed\n"
+    exit 1 
+  }
+}
