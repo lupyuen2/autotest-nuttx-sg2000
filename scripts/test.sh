@@ -74,6 +74,9 @@ read
 ##  Run the Automated Test
 script /tmp/test.log $SCRIPT_DIR/nuttx.exp
 
+## TODO: Power off the SBC with a Smart Power Plug
+echo Power off the SBC
+
 # echo "----- Power Off the SBC"
 # curl \
 #     -X POST \

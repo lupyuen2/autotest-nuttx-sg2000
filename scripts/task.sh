@@ -16,13 +16,9 @@ SCRIPT_DIR="$(cd -P "$(dirname -- "${SCRIPT_PATH}")" >/dev/null 2>&1 && pwd)"
 ## Wait for GitHub Release, then test NuttX on SBC
 function test_nuttx {
 
-  ## Default Build Date is today (YYYY-MM-DD)
-  if [ "$BUILD_DATE" == '' ]; then
-    export BUILD_DATE=$(date +'%Y-%m-%d')
-  fi
-
   ## If NuttX Build already downloaded, quit
-  NUTTX_ZIP=/tmp/$BUILD_PREFIX-$BUILD_DATE-nuttx.zip
+  local date=$1
+  NUTTX_ZIP=/tmp/$BUILD_PREFIX-$date-nuttx.zip
   if [ -e $NUTTX_ZIP ] 
   then
     return
@@ -30,7 +26,7 @@ function test_nuttx {
 
   echo "----- Download the NuttX Build"
   wget -q \
-    https://github.com/lupyuen/nuttx-sg2000/releases/download/$BUILD_PREFIX-$BUILD_DATE/nuttx.zip \
+    https://github.com/lupyuen/nuttx-sg2000/releases/download/$BUILD_PREFIX-$date/nuttx.zip \
     -O $NUTTX_ZIP \
     || true
 
@@ -50,10 +46,21 @@ function test_nuttx {
   echo test_nuttx OK!
 }
 
+## If Build Date is specified: Run once and quit
+if [ "$BUILD_DATE" != '' ]; then
+  test_nuttx $BUILD_DATE
+  exit
+fi
+
 ## Wait for GitHub Release, then test NuttX on SBC
 for (( ; ; ))
 do
-  test_nuttx
+  ## Default Build Date is today (YYYY-MM-DD)
+  BUILD_DATE=$(date +'%Y-%m-%d')
+  test_nuttx $BUILD_DATE
+
+  ## Wait a while
+  date
   sleep 600
 done
 echo Done!
