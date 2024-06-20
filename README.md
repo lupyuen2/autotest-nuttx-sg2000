@@ -5,8 +5,11 @@
 We are now running Daily Automated Testing of [Apache NuttX RTOS](https://github.com/lupyuen/nuttx-sg2000) on a Real Milk-V Duo S SBC (Sophgo SG2000 SoC)...
 
 1.  Download the [Automated Daily Build](https://github.com/lupyuen/nuttx-sg2000#nuttx-automated-daily-build-for-sg2000) to TFTP Server
-1.  TODO: Power on our SBC with an [IKEA Smart Power Plug via Home Assistant](https://lupyuen.github.io/articles/tftp#whats-next)
+
+1.  Power on our SBC with an [IKEA Smart Power Plug via Home Assistant](https://lupyuen.github.io/articles/tftp#whats-next)
+
 1.  Our SBC boots the Daily Build over TFTP
+
 1.  Capture the Automated Testing Log and write to the Release Notes
 
 Like this...

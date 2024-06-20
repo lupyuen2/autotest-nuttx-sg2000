@@ -59,23 +59,23 @@ set +x  ##  Disable echo
 set -x  ##  Enable echo
 
 set +x  ##  Disable echo
-# echo "----- Power Off the SBC"
-# curl \
-#     -X POST \
-#     -H "Authorization: Bearer $token" \
-#     -H "Content-Type: application/json" \
-#     -d '{"entity_id": "automation.sg2000_power_off"}' \
-#     http://localhost:8123/api/services/automation/trigger
+echo "----- Power Off the SBC"
+curl \
+    -X POST \
+    -H "Authorization: Bearer $token" \
+    -H "Content-Type: application/json" \
+    -d '{"entity_id": "automation.sg2000_power_off"}' \
+    http://localhost:8123/api/services/automation/trigger
 set -x  ##  Enable echo
 
 set +x  ##  Disable echo
-# echo "----- Power On the SBC"
-# curl \
-#     -X POST \
-#     -H "Authorization: Bearer $token" \
-#     -H "Content-Type: application/json" \
-#     -d '{"entity_id": "automation.sg2000_power_on"}' \
-#     http://localhost:8123/api/services/automation/trigger
+echo "----- Power On the SBC"
+curl \
+    -X POST \
+    -H "Authorization: Bearer $token" \
+    -H "Content-Type: application/json" \
+    -d '{"entity_id": "automation.sg2000_power_on"}' \
+    http://localhost:8123/api/services/automation/trigger
 set -x  ##  Enable echo
 
 ##  Run the Automated Test
@@ -85,13 +85,13 @@ script /tmp/test.log $SCRIPT_DIR/nuttx.exp
 echo Power off the SBC
 
 set +x  ##  Disable echo
-# echo "----- Power Off the SBC"
-# curl \
-#     -X POST \
-#     -H "Authorization: Bearer $token" \
-#     -H "Content-Type: application/json" \
-#     -d '{"entity_id": "automation.sg2000_power_off"}' \
-#     http://localhost:8123/api/services/automation/trigger
+echo "----- Power Off the SBC"
+curl \
+    -X POST \
+    -H "Authorization: Bearer $token" \
+    -H "Content-Type: application/json" \
+    -d '{"entity_id": "automation.sg2000_power_off"}' \
+    http://localhost:8123/api/services/automation/trigger
 set -x  ##  Enable echo
 
 ##  Check whether BL602 has crashed
