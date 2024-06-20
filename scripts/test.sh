@@ -4,12 +4,6 @@
 set -e  ##  Exit when any command fails
 set -x  ##  Echo commands
 
-## Get the Home Assistant Token, copied from http://localhost:8123/profile/security
-## token=xxxx
-set +x  ##  Disable echo
-. $HOME/home-assistant-token.sh
-set -x  ##  Enable echo
-
 ##  Default Build Prefix is "nuttx-sg2000"
 if [ "$BUILD_PREFIX" == '' ]; then
     export BUILD_PREFIX=nuttx-sg2000
@@ -57,6 +51,12 @@ set +x  ##  Disable echo
 ## TODO: Reboot the SBC with a Smart Power Plug
 echo Power off the SBC, press Enter, then power on...
 read
+
+## Get the Home Assistant Token, copied from http://localhost:8123/profile/security
+## token=xxxx
+set +x  ##  Disable echo
+. $HOME/home-assistant-token.sh
+set -x  ##  Enable echo
 
 set +x  ##  Disable echo
 # echo "----- Power Off the SBC"
