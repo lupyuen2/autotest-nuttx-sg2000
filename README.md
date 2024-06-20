@@ -17,6 +17,9 @@ script /tmp/release.log scripts/test.sh
 
 ## Upload the Test Log to GitHub Release Notes
 scripts/upload.sh
+
+## OR: Do this to run the Automated Test automatically whenever there's a Daily Build
+scripts/task.sh
 ```
 
 [(See the Automated Test Logs)](https://github.com/lupyuen/nuttx-sg2000/releases)
