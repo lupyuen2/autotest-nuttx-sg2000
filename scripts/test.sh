@@ -48,9 +48,9 @@ ssh tftpserver ls -l /tftpboot/Image-sg2000
 rm /tmp/Image
 set +x  ##  Disable echo
 
-## TODO: Reboot the SBC with a Smart Power Plug
-echo Power off the SBC, press Enter, then power on...
-read
+## Without a Smart Power Plug:
+## echo Power off the SBC, press Enter, then power on...
+## read
 
 ## Get the Home Assistant Token, copied from http://localhost:8123/profile/security
 ## token=xxxx
@@ -81,8 +81,8 @@ set -x  ##  Enable echo
 ##  Run the Automated Test
 script /tmp/test.log $SCRIPT_DIR/nuttx.exp
 
-## TODO: Power off the SBC with a Smart Power Plug
-echo Power off the SBC
+## Without a Smart Power Plug:
+## echo Power off the SBC
 
 set +x  ##  Disable echo
 echo "----- Power Off the SBC"
@@ -94,7 +94,7 @@ curl \
     http://localhost:8123/api/services/automation/trigger
 set -x  ##  Enable echo
 
-##  Check whether BL602 has crashed
+##  TODO: Check whether NuttX has crashed
 # set +e  ##  Don't exit when any command fails
 # match=$(grep "registerdump" /tmp/test.log)
 # set -e  ##  Exit when any command fails
