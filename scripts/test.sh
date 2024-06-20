@@ -6,7 +6,9 @@ set -x  ##  Echo commands
 
 ## Get the Home Assistant Token, copied from http://localhost:8123/profile/security
 ## token=xxxx
+set +x  ##  Disable echo
 . $HOME/home-assistant-token.sh
+set -x  ##  Enable echo
 
 ##  Default Build Prefix is "nuttx-sg2000"
 if [ "$BUILD_PREFIX" == '' ]; then
@@ -55,6 +57,7 @@ set +x  ##  Disable echo
 echo Power off the SBC, press Enter, then power on...
 read
 
+set +x  ##  Disable echo
 # echo "----- Power Off the SBC"
 # curl \
 #     -X POST \
@@ -62,7 +65,9 @@ read
 #     -H "Content-Type: application/json" \
 #     -d '{"entity_id": "automation.sg2000_power_off"}' \
 #     http://localhost:8123/api/services/automation/trigger
+set -x  ##  Enable echo
 
+set +x  ##  Disable echo
 # echo "----- Power On the SBC"
 # curl \
 #     -X POST \
@@ -70,6 +75,7 @@ read
 #     -H "Content-Type: application/json" \
 #     -d '{"entity_id": "automation.sg2000_power_on"}' \
 #     http://localhost:8123/api/services/automation/trigger
+set -x  ##  Enable echo
 
 ##  Run the Automated Test
 script /tmp/test.log $SCRIPT_DIR/nuttx.exp
@@ -77,6 +83,7 @@ script /tmp/test.log $SCRIPT_DIR/nuttx.exp
 ## TODO: Power off the SBC with a Smart Power Plug
 echo Power off the SBC
 
+set +x  ##  Disable echo
 # echo "----- Power Off the SBC"
 # curl \
 #     -X POST \
@@ -84,6 +91,7 @@ echo Power off the SBC
 #     -H "Content-Type: application/json" \
 #     -d '{"entity_id": "automation.sg2000_power_off"}' \
 #     http://localhost:8123/api/services/automation/trigger
+set -x  ##  Enable echo
 
 ##  Check whether BL602 has crashed
 # set +e  ##  Don't exit when any command fails
