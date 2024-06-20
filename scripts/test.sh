@@ -51,6 +51,7 @@ echo "----- Copy NuttX Image to TFTP Server"
 set -x  ##  Enable echo
 scp /tmp/Image tftpserver:/tftpboot/Image-sg2000
 ssh tftpserver ls -l /tftpboot/Image-sg2000
+rm /tmp/Image
 set +x  ##  Disable echo
 
 ## TODO: Reboot the SBC with a Smart Power Plug
