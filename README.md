@@ -100,6 +100,8 @@ curl \
   http://localhost:8123/api/services/automation/trigger
 ```
 
+![Controlling an IKEA Smart Power Plug with Home Assistant](https://lupyuen.github.io/images/sg2000a-flow.jpg)
+
 _Doesn't the USB UART Adapter supply a tiny bit of power to our SBC?_
 
 Yeah enough power to light up the SBC, but not enough to power up the SBC totally.
