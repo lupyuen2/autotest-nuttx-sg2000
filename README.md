@@ -62,7 +62,7 @@ Assume we have added the Smart Power Plug to Google Assistant, and named the Sma
 
 ![Create an Automation in Home Assistant](https://lupyuen.github.io/images/sg2000a-ha1.jpg)
 
-Select the Action in Home Assistant...
+Inside our Automation: Add an Action...
 
 ![Create an Automation in Home Assistant](https://lupyuen.github.io/images/sg2000a-ha2.jpg)
 
@@ -72,7 +72,7 @@ Select the Google Assistant SDK. Enter the command: "SG2000 Power On"...
 
 Save it as an Automation named "SG2000 Power On"...
 
-![create an Automation in Home Assistant](https://lupyuen.github.io/images/sg2000a-ha4.png)
+![Create an Automation in Home Assistant](https://lupyuen.github.io/images/sg2000a-ha4.png)
 
 _But how do we Power On our SBC from our Automated Test Script?_
 
@@ -99,6 +99,8 @@ curl \
   -d '{"entity_id": "automation.sg2000_power_on"}' \
   http://localhost:8123/api/services/automation/trigger
 ```
+
+![Power On our SBC from our Automated Test Script](https://lupyuen.github.io/images/sg2000a-power.png)
 
 # Expected Output
 
