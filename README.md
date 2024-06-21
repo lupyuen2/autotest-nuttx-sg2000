@@ -34,6 +34,28 @@ Here are the Automated Testing Scripts...
 - Upload Test Log: [upload.sh](scripts/upload.sh)
 - Expect Script: [nuttx.exp](scripts/nuttx.exp)
 
+# TODO
+
+![TODO](https://lupyuen.github.io/images/sg2000a-ikea.jpg)
+
+TODO
+
+![TODO](https://lupyuen.github.io/images/sg2000a-ha1.jpg)
+
+TODO
+
+![TODO](https://lupyuen.github.io/images/sg2000a-ha2.jpg)
+
+TODO
+
+![TODO](https://lupyuen.github.io/images/sg2000a-ha3.jpg)
+
+TODO
+
+> ![TODO](https://lupyuen.github.io/images/sg2000a-ha4.png)
+
+TODO
+
 # Expected Output
 
 Test OK
