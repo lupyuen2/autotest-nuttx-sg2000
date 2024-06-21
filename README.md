@@ -34,27 +34,71 @@ Here are the Automated Testing Scripts...
 - Upload Test Log: [upload.sh](scripts/upload.sh)
 - Expect Script: [nuttx.exp](scripts/nuttx.exp)
 
-# TODO
+# Control our SBC with an IKEA Smart Power Plug and Home Assistant
 
-![TODO](https://lupyuen.github.io/images/sg2000a-ikea.jpg)
+_How did we power on and off our SG2000 SBC? Automagically?_
 
-TODO
+We used an [IKEA TRETAKT Smart Power Plug](https://www.ikea.com/gb/en/p/tretakt-plug-with-remote-control-smart-30569726/) with an [IKEA DIRIGERA Zigbee Hub](https://www.ikea.com/gb/en/p/dirigera-hub-for-smart-products-white-smart-50503409/).
 
-![TODO](https://lupyuen.github.io/images/sg2000a-ha1.jpg)
+We added the Smart Power Plug to the IKEA Home Smart App like this...
 
-TODO
+![IKEA Smart Power Plug in IKEA Home Smart App](https://lupyuen.github.io/images/sg2000a-ikea.jpg)
 
-![TODO](https://lupyuen.github.io/images/sg2000a-ha2.jpg)
+_But IKEA doesn't provide a Public API for their gadgets!_
 
-TODO
+Yeah sigh. That's why we...
 
-![TODO](https://lupyuen.github.io/images/sg2000a-ha3.jpg)
+1.  Add IKEA Smart Power Plug to [Google Assistant](https://www.ikea.com/nl/en/customer-service/knowledge/articles/c916g4b0-c602-4g65-9c4e-b40f801g43dc.html)
 
-TODO
+1.  And control the IKEA Smart Power Plug via the [Google Assistant SDK](https://gist.github.com/lupyuen/01cff0d4ca225984ca8fd0d999d7c76d)
 
-> ![TODO](https://lupyuen.github.io/images/sg2000a-ha4.png)
+1.  By running Home Assistant with [Google Assistant SDK](https://gist.github.com/lupyuen/01cff0d4ca225984ca8fd0d999d7c76d)
 
-TODO
+1.  For macOS: We run [Home Assistant in a Docker Container (Rancher Desktop)](https://gist.github.com/lupyuen/03a7cc8702085c70893e157d8c3ca3f8)
+
+_How will Home Assistant control Google Assistant to control our Smart Power Plug?_
+
+Assume we have added the Smart Power Plug to Google Assistant, and named the Smart Power Plug as "SG2000 Power". We create an Automation in Home Assistant...
+
+![Create an Automation in Home Assistant](https://lupyuen.github.io/images/sg2000a-ha1.jpg)
+
+Select the Action in Home Assistant...
+
+![Create an Automation in Home Assistant](https://lupyuen.github.io/images/sg2000a-ha2.jpg)
+
+Select the Google Assistant SDK. Enter the command: "SG2000 Power On"...
+
+![Create an Automation in Home Assistant](https://lupyuen.github.io/images/sg2000a-ha3.jpg)
+
+Save it as an Automation named "SG2000 Power On"...
+
+![create an Automation in Home Assistant](https://lupyuen.github.io/images/sg2000a-ha4.png)
+
+_But how do we Power On our SBC from our Automated Test Script?_
+
+We call the [Home Assistant REST API](https://developers.home-assistant.io/docs/api/rest/) with a Home Assistant Long-Lived Token: [test.sh](https://github.com/lupyuen2/autotest-nuttx-sg2000/blob/main/scripts/test.sh#L54-L80)
+
+```bash
+## Get the Home Assistant Token, copied from http://localhost:8123/profile/security
+## token=xxxx
+. $HOME/home-assistant-token.sh
+
+echo "----- Power Off the SBC"
+curl \
+  -X POST \
+  -H "Authorization: Bearer $token" \
+  -H "Content-Type: application/json" \
+  -d '{"entity_id": "automation.sg2000_power_off"}' \
+  http://localhost:8123/api/services/automation/trigger
+
+echo "----- Power On the SBC"
+curl \
+  -X POST \
+  -H "Authorization: Bearer $token" \
+  -H "Content-Type: application/json" \
+  -d '{"entity_id": "automation.sg2000_power_on"}' \
+  http://localhost:8123/api/services/automation/trigger
+```
 
 # Expected Output
 
