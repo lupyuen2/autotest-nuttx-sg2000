@@ -6,7 +6,7 @@ We are now running Daily Automated Testing of [Apache NuttX RTOS](https://github
 
 1.  Download the [Automated Daily Build](https://github.com/lupyuen/nuttx-sg2000#nuttx-automated-daily-build-for-sg2000) to TFTP Server
 
-1.  Power on our SBC with an [IKEA Smart Power Plug via Home Assistant](https://lupyuen.github.io/articles/tftp#whats-next)
+1.  Power on our SBC with an [IKEA Smart Power Plug via Home Assistant](https://github.com/lupyuen2/autotest-nuttx-sg2000#control-our-sbc-with-an-ikea-smart-power-plug-and-home-assistant)
 
 1.  Our SBC boots the Daily Build over TFTP
 
