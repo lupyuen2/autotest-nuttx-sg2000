@@ -100,6 +100,12 @@ curl \
   http://localhost:8123/api/services/automation/trigger
 ```
 
+_Doesn't the USB UART Adapter supply a tiny bit of power to our SBC?_
+
+Yeah enough power to light up the SBC, but not enough to power up the SBC totally.
+
+Thus our SBC will glow at night, even though the power is off. (I drape a hand towel so it won't bother my sleep)
+
 ![Power On our SBC from our Automated Test Script](https://lupyuen.github.io/images/sg2000a-power.png)
 
 # Expected Output
