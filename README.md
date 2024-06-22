@@ -1,5 +1,9 @@
 ![64-bit RISC-V Sophgo SG2000 (T-Head C906 / Milk-V Duo S)](https://lupyuen.github.io/images/sg2000-title.jpg)
 
+[(See the __Automated Test Logs__)](https://github.com/lupyuen/nuttx-sg2000/tags)
+
+[(Watch the __Demo on YouTube__)](https://youtu.be/iTOwfPCpXDc)
+
 # Automated Testing of Apache NuttX RTOS on Sophgo SG2000 SoC / Milk-V Duo S SBC
 
 We are now running Daily Automated Testing of [Apache NuttX RTOS](https://github.com/lupyuen/nuttx-sg2000) on a Real Milk-V Duo S SBC (Sophgo SG2000 SoC)...
@@ -25,7 +29,9 @@ scripts/upload.sh
 scripts/task.sh
 ```
 
-[(See the Automated Test Logs)](https://github.com/lupyuen/nuttx-sg2000/releases)
+[(See the __Automated Test Logs__)](https://github.com/lupyuen/nuttx-sg2000/tags)
+
+[(Watch the __Demo on YouTube__)](https://youtu.be/iTOwfPCpXDc)
 
 Here are the Automated Testing Scripts...
 
