@@ -47,7 +47,7 @@ expect {
   "ostest_main: Exiting with status 0" { 
     ## Terminate the session: Ctrl-A k y
     send "\x01ky"
-    puts "===== Test OK\n"
+    puts "\n===== Test OK\n"
     exit 0 
   }
 
@@ -55,7 +55,7 @@ expect {
   timeout { 
     ## Terminate the session: Ctrl-A k y
     send "\x01ky"
-    puts "===== Error: Test Failed\n"
+    puts "\n===== Error: Test Failed\n"
     exit 1 
   }
 }

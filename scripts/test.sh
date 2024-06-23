@@ -79,7 +79,7 @@ curl \
 set -x  ##  Enable echo
 
 ##  Run the Automated Test
-script /tmp/test.log $SCRIPT_DIR/nuttx.exp
+$SCRIPT_DIR/nuttx.exp
 
 ## Without a Smart Power Plug:
 ## echo Power off the SBC

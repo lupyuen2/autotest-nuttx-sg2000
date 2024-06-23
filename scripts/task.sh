@@ -38,10 +38,12 @@ function test_nuttx {
   fi
 
   echo "----- Run the NuttX Test"
-  script \
-    /tmp/release.log \
-    $SCRIPT_DIR/test.sh \
-    && $SCRIPT_DIR/upload.sh
+  $SCRIPT_DIR/test.sh \
+    | tee /tmp/release.log \
+    2>&1
+
+  echo "----- Upload the Test Log"
+  $SCRIPT_DIR/upload.sh
 
   echo test_nuttx OK!
 }
