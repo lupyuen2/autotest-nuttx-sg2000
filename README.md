@@ -6,6 +6,10 @@
 
 # Automated Testing of Apache NuttX RTOS on Sophgo SG2000 SoC / Milk-V Duo S SBC
 
+Read the article...
+
+- ["Daily Automated Testing for Milk-V Duo S RISC-V SBC (IKEA TRETAKT / Apache NuttX RTOS)"](https://lupyuen.github.io/articles/sg2000a)
+
 We are now running Daily Automated Testing of [Apache NuttX RTOS](https://github.com/lupyuen/nuttx-sg2000) on a Real Milk-V Duo S SBC (Sophgo SG2000 SoC)...
 
 1.  Download the [Automated Daily Build](https://github.com/lupyuen/nuttx-sg2000#nuttx-automated-daily-build-for-sg2000) to TFTP Server
