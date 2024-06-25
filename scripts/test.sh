@@ -48,8 +48,10 @@ ssh tftpserver ls -l /tftpboot/Image-sg2000
 rm /tmp/Image
 set +x  ##  Disable echo
 
-##  Close the `screen` session
+echo "----- Close the screen session"
+set -x  ##  Enable echo
 $SCRIPT_DIR/close.exp || true
+set +x  ##  Disable echo
 
 ## Without a Smart Power Plug:
 ## echo Power off the SBC, press Enter, then power on...
@@ -82,6 +84,9 @@ curl \
 set -x  ##  Enable echo
 
 ##  Run the Automated Test
+set +x  ##  Disable echo
+echo "----- Run the Automated Test"
+set -x  ##  Enable echo
 $SCRIPT_DIR/nuttx.exp
 
 ## Without a Smart Power Plug:
