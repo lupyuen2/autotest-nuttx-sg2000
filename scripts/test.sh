@@ -78,6 +78,9 @@ curl \
     http://localhost:8123/api/services/automation/trigger
 set -x  ##  Enable echo
 
+##  Close the `screen` session
+$SCRIPT_DIR/close.exp || true
+
 ##  Run the Automated Test
 $SCRIPT_DIR/nuttx.exp
 
