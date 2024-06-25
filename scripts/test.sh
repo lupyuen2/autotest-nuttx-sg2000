@@ -48,6 +48,9 @@ ssh tftpserver ls -l /tftpboot/Image-sg2000
 rm /tmp/Image
 set +x  ##  Disable echo
 
+##  Close the `screen` session
+$SCRIPT_DIR/close.exp || true
+
 ## Without a Smart Power Plug:
 ## echo Power off the SBC, press Enter, then power on...
 ## read
@@ -77,9 +80,6 @@ curl \
     -d '{"entity_id": "automation.sg2000_power_on"}' \
     http://localhost:8123/api/services/automation/trigger
 set -x  ##  Enable echo
-
-##  Close the `screen` session
-$SCRIPT_DIR/close.exp || true
 
 ##  Run the Automated Test
 $SCRIPT_DIR/nuttx.exp
