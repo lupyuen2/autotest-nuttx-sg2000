@@ -42,6 +42,12 @@ function test_nuttx {
     | tee /tmp/release.log \
     2>&1
 
+  ## Trim to first 500 lines
+  head -n 500 /tmp/release.log \
+    >/tmp/release2.log
+  mv /tmp/release2.log \
+    /tmp/release.log
+
   echo "----- Upload the Test Log"
   $SCRIPT_DIR/upload.sh
 
