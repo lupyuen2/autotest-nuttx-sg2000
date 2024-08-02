@@ -42,8 +42,8 @@ function test_nuttx {
     | tee /tmp/release.log \
     2>&1
 
-  ## Trim to first 1500 lines
-  head -n 1500 /tmp/release.log \
+  ## Trim to first 100000 bytes
+  head -c 100000 /tmp/release.log \
     >/tmp/release2.log
   mv /tmp/release2.log \
     /tmp/release.log
