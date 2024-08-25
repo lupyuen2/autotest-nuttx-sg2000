@@ -24,6 +24,7 @@ function test_nuttx {
     return
   fi
 
+  echo "----- ${BASH_SOURCE}"
   echo "----- Download the NuttX Build"
   wget -q \
     https://github.com/lupyuen/nuttx-sg2000/releases/download/$BUILD_PREFIX-$date/nuttx.zip \
@@ -69,6 +70,6 @@ do
 
   ## Wait a while
   date
-  sleep 600
+  sleep 1800
 done
 echo Done!

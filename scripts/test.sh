@@ -20,6 +20,7 @@ if [ "$USB_DEVICE" == '' ]; then
 fi
 
 set +x  ##  Disable echo
+date
 echo "----- Download the latest NuttX build for $BUILD_DATE"
 set -x  ##  Enable echo
 wget -q https://github.com/lupyuen/nuttx-sg2000/releases/download/$BUILD_PREFIX-$BUILD_DATE/nuttx.zip -O /tmp/nuttx.zip
@@ -27,6 +28,7 @@ pushd /tmp
 unzip -o nuttx.zip
 popd
 set +x  ##  Disable echo
+date
 
 ##  Get the Script Directory
 SCRIPT_PATH="${BASH_SOURCE}"
@@ -47,11 +49,13 @@ scp /tmp/Image tftpserver:/tftpboot/Image-sg2000
 ssh tftpserver ls -l /tftpboot/Image-sg2000
 rm /tmp/Image
 set +x  ##  Disable echo
+date
 
 echo "----- Close the screen session"
 set -x  ##  Enable echo
 $SCRIPT_DIR/close.exp || true
 set +x  ##  Disable echo
+date
 
 ## Without a Smart Power Plug:
 ## echo Power off the SBC, press Enter, then power on...
@@ -64,6 +68,7 @@ set +x  ##  Disable echo
 set -x  ##  Enable echo
 
 set +x  ##  Disable echo
+date
 echo "----- Power Off the SBC"
 curl \
     -X POST \
@@ -74,6 +79,7 @@ curl \
 set -x  ##  Enable echo
 
 set +x  ##  Disable echo
+date
 echo "----- Power On the SBC"
 curl \
     -X POST \
@@ -85,6 +91,7 @@ set -x  ##  Enable echo
 
 ##  Run the Automated Test
 set +x  ##  Disable echo
+date
 echo "----- Run the Automated Test"
 set -x  ##  Enable echo
 $SCRIPT_DIR/nuttx.exp
@@ -93,6 +100,7 @@ $SCRIPT_DIR/nuttx.exp
 ## echo Power off the SBC
 
 set +x  ##  Disable echo
+date
 echo "----- Power Off the SBC"
 curl \
     -X POST \
@@ -100,6 +108,7 @@ curl \
     -H "Content-Type: application/json" \
     -d '{"entity_id": "automation.sg2000_power_off"}' \
     http://localhost:8123/api/services/automation/trigger
+date
 set -x  ##  Enable echo
 
 ##  TODO: Check whether NuttX has crashed
