@@ -10,6 +10,9 @@ set send_slow {1 0.001}
 ## Connect to SBC over USB Serial Port
 spawn screen /dev/tty.usbserial-0001 115200
 
+## Wait a while for U-Boot Bootloader to boot NuttX
+sleep 20
+
 ## Wake up NSH Shell
 send -s "\r"
 
